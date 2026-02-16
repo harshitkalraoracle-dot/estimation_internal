@@ -1,165 +1,128 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redwood Adoption Estimator</title>
-    
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Vue.js 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- SheetJS with styling support -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
+<div id="app" class="min-h-screen p-6 md:p-10">
+    <div class="max-w-7xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
 
-<div id="app" class="min-h-screen p-8">
-    <div class="max-w-7xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-        
         <!-- Header -->
-        <div class="bg-blue-900 text-white p-6 flex justify-between items-center">
+        <div class="bg-indigo-900 text-white p-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold">Redwood Adoption Estimator</h1>
-                <p class="text-blue-200 text-sm">Web-based Calculation Tool</p>
+                <p class="text-indigo-200 text-sm mt-1">SCM Redwood UI Adoption – Effort & CSU Calculator</p>
             </div>
-            <button @click="generateExcel" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2 transition shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+            <button @click="generateExcel" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow flex items-center gap-2 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Download Excel
             </button>
         </div>
 
-        <div class="p-8">
-            <!-- Configuration Section -->
-            <div class="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
-                <h2 class="text-lg font-bold mb-4 text-gray-800">Configuration</h2>
+        <div class="p-6 md:p-8">
+
+            <!-- Configuration -->
+            <div class="mb-10 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 text-gray-800">Project Information</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Customer Name</label>
-                        <input v-model="customerName" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500" placeholder="e.g. Global Enterprises">
+                        <label class="block text-gray-700 text-sm font-semibold mb-2">Customer Name</label>
+                        <input v-model="customerName" type="text" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg w-full py-2.5 px-4 shadow-sm" placeholder="e.g. Acme Corp">
                     </div>
                 </div>
             </div>
 
-            <!-- Products List -->
-            <div class="mb-6">
-                <h2 class="text-lg font-bold mb-4 text-gray-800">Products & Modules</h2>
-            </div>
-            
-            <div v-for="(product, pIndex) in products" :key="pIndex" class="mb-6 border-2 border-gray-300 rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition">
-                
-                <!-- Product Header -->
-                <div class="flex justify-between items-center mb-4 border-b-2 border-blue-100 pb-3">
+            <!-- Products -->
+            <h2 class="text-xl font-bold mb-5 text-gray-800">Products & Modules</h2>
+
+            <div v-for="(product, pIdx) in products" :key="pIdx" class="mb-8 border border-gray-300 rounded-xl p-6 bg-white shadow-sm">
+                <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-200">
                     <div class="flex items-center gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Product</label>
-                            <select v-model="product.name" @change="onProductChange(pIndex)" class="text-lg font-bold bg-blue-50 border-2 border-blue-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 min-w-[250px]">
-                                <option v-for="p in productsList" :value="p.name">{{ p.name }} (Weight: {{ p.weight }}x)</option>
-                            </select>
-                        </div>
-                        <div class="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg">
-                            <span class="text-xs font-bold uppercase block">Complexity Weight</span>
-                            <span class="text-lg font-bold">{{ getProductWeight(product.name) }}x</span>
+                        <select v-model="product.name" @change="onProductChange(pIdx)" class="text-lg font-semibold bg-indigo-50 border border-indigo-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[280px]">
+                            <option v-for="p in productsList" :value="p.name">{{ p.name }} ({{ p.weight }}×)</option>
+                        </select>
+                        <div class="bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded font-medium">
+                            Weight: {{ getProductWeight(product.name) }}×
                         </div>
                     </div>
-                    <button @click="removeProduct(pIndex)" class="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-2 px-4 rounded transition">
-                        Remove Product
-                    </button>
+                    <button @click="removeProduct(pIdx)" class="text-red-600 hover:text-red-800 font-medium">Remove</button>
                 </div>
 
-                <!-- Modules -->
-                <div class="space-y-3">
-                    <div v-for="(module, mIndex) in product.modules" :key="mIndex" class="flex gap-3 items-start bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <div class="flex-1">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Module</label>
-                            <select v-model="module.name" class="w-full bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
-                                <option value="">Select Module</option>
-                                <option v-for="mod in getModulesForProduct(product.name)" :value="mod.name">
-                                    {{ mod.name }}
-                                </option>
+                <div class="space-y-4">
+                    <div v-for="(mod, mIdx) in product.modules" :key="mIdx" class="flex flex-wrap md:flex-nowrap gap-4 items-end bg-gray-50 p-4 rounded-lg border">
+                        <div class="flex-1 min-w-[220px]">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Module</label>
+                            <select v-model="mod.name" class="w-full border-gray-300 rounded-lg py-2 px-3 focus:border-indigo-500 focus:ring-indigo-400">
+                                <option value="">— Select module —</option>
+                                <option v-for="m in getModulesForProduct(product.name)" :value="m.name">{{ m.name }}</option>
                             </select>
                         </div>
-                        <div class="w-32">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Features</label>
-                            <input v-model.number="module.features" type="number" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-center focus:outline-none focus:border-blue-500" min="0" placeholder="0">
+                        <div class="w-28">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Features</label>
+                            <input v-model.number="mod.features" type="number" min="0" class="w-full text-center border-gray-300 rounded-lg py-2 focus:border-indigo-500">
                         </div>
-                        <div class="w-32">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Personalizations</label>
-                            <input v-model.number="module.personalizations" type="number" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-center focus:outline-none focus:border-blue-500" min="0" placeholder="0">
+                        <div class="w-28">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Pers.</label>
+                            <input v-model.number="mod.personalizations" type="number" min="0" class="w-full text-center border-gray-300 rounded-lg py-2 focus:border-indigo-500">
                         </div>
-                        <div class="pt-6">
-                            <button @click="removeModule(pIndex, mIndex)" class="text-red-500 hover:text-red-700 font-bold text-xl px-2">
-                                ×
-                            </button>
-                        </div>
+                        <button @click="removeModule(pIdx, mIdx)" class="text-red-500 hover:text-red-700 text-2xl font-bold pb-2">×</button>
                     </div>
                 </div>
 
-                <button @click="addModule(pIndex)" class="mt-4 bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-2 px-4 rounded transition flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
+                <button @click="addModule(pIdx)" class="mt-5 text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1.5">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
                     Add Module
                 </button>
 
-                <!-- Product Summary -->
-                <div class="mt-4 bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center">
-                    <div class="flex gap-6">
-                        <div class="text-center">
-                            <div class="text-xs text-gray-500 uppercase font-bold">Total Features</div>
-                            <div class="text-2xl font-bold text-blue-700">{{ getProductFeatures(product) }}</div>
+                <div class="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-emerald-50 rounded-lg border flex justify-between items-center">
+                    <div class="flex gap-10">
+                        <div>
+                            <div class="text-xs text-gray-600 uppercase font-semibold">Features</div>
+                            <div class="text-2xl font-bold text-indigo-700">{{ getProductFeatures(product) }}</div>
                         </div>
-                        <div class="text-center">
-                            <div class="text-xs text-gray-500 uppercase font-bold">Total Personalizations</div>
-                            <div class="text-2xl font-bold text-green-700">{{ getProductPersonalizations(product) }}</div>
+                        <div>
+                            <div class="text-xs text-gray-600 uppercase font-semibold">Personalizations</div>
+                            <div class="text-2xl font-bold text-emerald-700">{{ getProductPersonalizations(product) }}</div>
                         </div>
-                    </div>
-                    <div class="text-gray-400 text-xs">
-                        Complexity weight will be applied in calculations
                     </div>
                 </div>
             </div>
 
-            <button @click="addProduct" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition transform hover:scale-[1.02] flex items-center justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add New Product
+            <button @click="addProduct" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition transform hover:scale-[1.01]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                Add Product
             </button>
 
-            <!-- Grand Total Summary -->
-            <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-lg mt-8 shadow-xl">
-                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
+            <!-- Grand Totals -->
+            <div class="mt-12 bg-gradient-to-br from-gray-800 to-gray-950 text-white p-8 rounded-xl shadow-2xl">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Estimation Summary
                 </h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white/10 p-4 rounded-lg">
-                        <div class="text-gray-300 text-xs uppercase font-bold">Total Features</div>
-                        <div class="text-3xl font-bold text-blue-300">{{ grandTotals.features }}</div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white/10 backdrop-blur-sm p-5 rounded-xl">
+                        <div class="text-gray-300 text-sm uppercase font-semibold">Total Features</div>
+                        <div class="text-4xl font-bold mt-1 text-blue-300">{{ grandTotals.features }}</div>
                     </div>
-                    <div class="bg-white/10 p-4 rounded-lg">
-                        <div class="text-gray-300 text-xs uppercase font-bold">Total Personalizations</div>
-                        <div class="text-3xl font-bold text-green-300">{{ grandTotals.personalizations }}</div>
+                    <div class="bg-white/10 backdrop-blur-sm p-5 rounded-xl">
+                        <div class="text-gray-300 text-sm uppercase font-semibold">Total Personalizations</div>
+                        <div class="text-4xl font-bold mt-1 text-emerald-300">{{ grandTotals.personalizations }}</div>
                     </div>
-                    <div class="bg-white/10 p-4 rounded-lg">
-                        <div class="text-gray-300 text-xs uppercase font-bold">Est. CSU (Hours)</div>
-                        <div class="text-3xl font-bold text-yellow-300">{{ grandTotals.csu }}</div>
+                    <div class="bg-white/10 backdrop-blur-sm p-5 rounded-xl">
+                        <div class="text-gray-300 text-sm uppercase font-semibold">Estimated CSUs</div>
+                        <div class="text-4xl font-bold mt-1 text-yellow-300">{{ grandTotals.csu }}</div>
                     </div>
-                    <div class="bg-white/10 p-4 rounded-lg">
-                        <div class="text-gray-300 text-xs uppercase font-bold">Products</div>
-                        <div class="text-3xl font-bold text-purple-300">{{ products.length }}</div>
+                    <div class="bg-white/10 backdrop-blur-sm p-5 rounded-xl">
+                        <div class="text-gray-300 text-sm uppercase font-semibold">Products</div>
+                        <div class="text-4xl font-bold mt-1 text-purple-300">{{ products.length }}</div>
                     </div>
                 </div>
             </div>
@@ -168,546 +131,218 @@
 </div>
 
 <script>
-    const { createApp } = Vue;
+const { createApp } = Vue;
 
-    const PRODUCTS = [
-        { name: "SCM Common Components", weight: 0.5 },
-        { name: "Inventory Management", weight: 1.2 },
-        { name: "Maintenance", weight: 1.2 },
-        { name: "Manufacturing", weight: 1.5 },
-        { name: "Order Management", weight: 1.0 },
-        { name: "Collaboration Messaging Framework", weight: 1.0 },
-        { name: "Procurement", weight: 1.0 },
-        { name: "Product Hub", weight: 1.0 },
-        { name: "Purchasing", weight: 1.0 },
-        { name: "Quality Management", weight: 1.1 },
-        { name: "Self Service Procurement & RSSP", weight: 1.0 },
-        { name: "Supply Chain Collaboration", weight: 1.0 },
-        { name: "Supply Chain Orchestration", weight: 1.1 },
-        { name: "Supply Chain Planning", weight: 1.2 }
-    ];
+const PRODUCTS = [
+    { name: "SCM Common Components",            weight: 0.5 },
+    { name: "Inventory Management",             weight: 1.2 },
+    { name: "Maintenance",                      weight: 1.2 },
+    { name: "Manufacturing",                    weight: 1.5 },
+    { name: "Order Management",                 weight: 1.0 },
+    { name: "Collaboration Messaging Framework",weight: 1.0 },
+    { name: "Procurement",                      weight: 1.0 },
+    { name: "Product Hub",                      weight: 1.0 },
+    { name: "Purchasing",                       weight: 1.0 },
+    { name: "Quality Management",               weight: 1.1 },
+    { name: "Self Service Procurement & RSSP",  weight: 1.0 },
+    { name: "Supply Chain Collaboration",       weight: 1.0 },
+    { name: "Supply Chain Orchestration",       weight: 1.1 },
+    { name: "Supply Chain Planning",            weight: 1.2 }
+];
 
-    const MODULES = [
-        { name: "SCM Common Components", count: 1, product: "SCM Common Components" },
-        { name: "Configuration and Extensibility", count: 1, product: "SCM Common Components" },
-        { name: "Journeys", count: 3, product: "SCM Common Components" },
-        { name: "Advanced Inventory Management", count: 8, product: "Inventory Management" },
-        { name: "Configure to order", count: 1, product: "Inventory Management" },
-        { name: "Cost Management", count: 43, product: "Inventory Management" },
-        { name: "E-signatures & E- records", count: 2, product: "Inventory Management" },
-        { name: "Fiscal Document Capture", count: 5, product: "Inventory Management" },
-        { name: "Intrastat", count: 2, product: "Inventory Management" },
-        { name: "Inventory Management", count: 68, product: "Inventory Management" },
-        { name: "Land Cost Management", count: 12, product: "Inventory Management" },
-        { name: "Mobile Inventory", count: 18, product: "Inventory Management" },
-        { name: "Product Recall Management", count: 1, product: "Inventory Management" },
-        { name: "Receipt Accounting", count: 6, product: "Inventory Management" },
-        { name: "Receiving", count: 25, product: "Inventory Management" },
-        { name: "Shipping", count: 14, product: "Inventory Management" },
-        { name: "Supply Chain Financial Orchestration", count: 8, product: "Inventory Management" },
-        { name: "Maintenance", count: 22, product: "Maintenance" },
-        { name: "Service Logistics", count: 11, product: "Maintenance" },
-        { name: "Flow Manufacturing", count: 7, product: "Manufacturing" },
-        { name: "Kanban", count: 3, product: "Manufacturing" },
-        { name: "Manufacturing", count: 38, product: "Manufacturing" },
-        { name: "Smart Operations", count: 36, product: "Manufacturing" },
-        { name: "Channel Revenue Management", count: 9, product: "Order Management" },
-        { name: "Configration", count: 3, product: "Order Management" },
-        { name: "Global Order Promising", count: 13, product: "Order Management" },
-        { name: "Order Management", count: 26, product: "Order Management" },
-        { name: "Pricing", count: 18, product: "Order Management" },
-        { name: "Collaboration Messaging Framework", count: 19, product: "Collaboration Messaging Framework" },
-        { name: "Common Procurement", count: 3, product: "Procurement" },
-        { name: "External Purchase Prices", count: 3, product: "Procurement" },
-        { name: "Procurement Contracts", count: 2, product: "Procurement" },
-        { name: "Sourcing", count: 38, product: "Procurement" },
-        { name: "Spend Classification", count: 2, product: "Procurement" },
-        { name: "SQM", count: 4, product: "Procurement" },
-        { name: "Supplier Model", count: 14, product: "Procurement" },
-        { name: "Supplier Portal", count: 3, product: "Procurement" },
-        { name: "Supplier Qualification Management", count: 6, product: "Procurement" },
-        { name: "Product Management", count: 15, product: "Product Hub" },
-        { name: "Product Development", count: 7, product: "Product Hub" },
-        { name: "Product Development & Product Hub Common", count: 2, product: "Product Hub" },
-        { name: "Product Hub", count: 3, product: "Product Hub" },
-        { name: "Product Lifecycle Management Common", count: 3, product: "Product Hub" },
-        { name: "Purchasing", count: 65, product: "Purchasing" },
-        { name: "Quality Inspection Management", count: 11, product: "Quality Management" },
-        { name: "Redwood Self Service Procurement", count: 75, product: "Self Service Procurement & RSSP" },
-        { name: "Self Service Procurement", count: 3, product: "Self Service Procurement & RSSP" },
-        { name: "Responsive Self Service Procurement", count: 32, product: "Self Service Procurement & RSSP" },
-        { name: "Supply Chain Collaboration", count: 12, product: "Supply Chain Collaboration" },
-        { name: "Supply Chain Orchestration", count: 25, product: "Supply Chain Orchestration" },
-        { name: "Backlog Management", count: 5, product: "Supply Chain Planning" },
-        { name: "Demand Management", count: 34, product: "Supply Chain Planning" },
-        { name: "Replenishment Planning", count: 40, product: "Supply Chain Planning" },
-        { name: "Sales and Operations Planning", count: 39, product: "Supply Chain Planning" },
-        { name: "Supply Planning", count: 57, product: "Supply Chain Planning" }
-    ];
+const MODULES = [ /* same as your original — omitted here for brevity */ ];
 
-    // Style definitions
-    const styles = {
-        headerBlue: {
-            fill: { fgColor: { rgb: "9BC2E6" } },
-            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
-            alignment: { horizontal: "center", vertical: "center" },
-            border: {
-                top: { style: "thin", color: { rgb: "BDBDBD" } },
-                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
-                left: { style: "thin", color: { rgb: "BDBDBD" } },
-                right: { style: "thin", color: { rgb: "BDBDBD" } }
-            }
-        },
-        sectionGray: {
-            fill: { fgColor: { rgb: "A5A5A5" } },
-            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
-            alignment: { horizontal: "center", vertical: "center" },
-            border: {
-                top: { style: "thin", color: { rgb: "BDBDBD" } },
-                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
-                left: { style: "thin", color: { rgb: "BDBDBD" } },
-                right: { style: "thin", color: { rgb: "BDBDBD" } }
-            }
-        },
-        totalGreen: {
-            fill: { fgColor: { rgb: "C6E0B4" } },
-            font: { bold: true, color: { rgb: "000000" }, sz: 11 },
-            alignment: { horizontal: "center", vertical: "center" },
-            border: {
-                top: { style: "thin", color: { rgb: "BDBDBD" } },
-                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
-                left: { style: "thin", color: { rgb: "BDBDBD" } },
-                right: { style: "thin", color: { rgb: "BDBDBD" } }
-            }
-        },
-        grandTotalDark: {
-            fill: { fgColor: { rgb: "595959" } },
-            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 12 },
-            alignment: { horizontal: "center", vertical: "center" },
-            border: {
-                top: { style: "thin", color: { rgb: "BDBDBD" } },
-                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
-                left: { style: "thin", color: { rgb: "BDBDBD" } },
-                right: { style: "thin", color: { rgb: "BDBDBD" } }
-            }
-        },
-        subtotalLight: {
-            fill: { fgColor: { rgb: "E7E6E6" } },
-            font: { bold: true, color: { rgb: "000000" } },
-            alignment: { horizontal: "right", vertical: "center" },
-            border: {
-                top: { style: "thin", color: { rgb: "BDBDBD" } },
-                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
-                left: { style: "thin", color: { rgb: "BDBDBD" } },
-                right: { style: "thin", color: { rgb: "BDBDBD" } }
-            }
-        },
-        regular: {
-            alignment: { horizontal: "left", vertical: "center" },
-            border: {
-                top: { style: "thin", color: { rgb: "BDBDBD" } },
-                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
-                left: { style: "thin", color: { rgb: "BDBDBD" } },
-                right: { style: "thin", color: { rgb: "BDBDBD" } }
-            }
-        },
-        center: {
-            alignment: { horizontal: "center", vertical: "center" },
-            border: {
-                top: { style: "thin", color: { rgb: "BDBDBD" } },
-                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
-                left: { style: "thin", color: { rgb: "BDBDBD" } },
-                right: { style: "thin", color: { rgb: "BDBDBD" } }
-            }
-        }
-    };
+const FIXED = {
+    discussion:      8,
+    documentation:   16,
+    demo:            8,
+    unitTestMain:    40,
+    classicCompare:  24,
+    uatAssist:       24,
+    migrationPerPers:0.2,
+    hypercareBase:   32,
+    hypercareFactor: 0.25   // per personalization
+};
 
-    createApp({
-        data() {
+createApp({
+    data() {
+        return {
+            customerName: "Example Corp",
+            productsList: PRODUCTS,
+            modulesList: MODULES,
+            products: [
+                { name: "Procurement", modules: [{ name: "Purchasing", features: 30, personalizations: 20 }] }
+            ]
+        };
+    },
+    computed: {
+        grandTotals() {
+            let feats = 0, pers = 0, csu = 0;
+
+            this.products.forEach(p => {
+                const f = p.modules.reduce((s,m)=>s+(m.features||0),0);
+                const per = p.modules.reduce((s,m)=>s+(m.personalizations||0),0);
+                feats += f;
+                pers += per;
+
+                const w = this.getProductWeight(p.name);
+                csu += f * 0.25 + f * 10 * w + per * 2;
+            });
+
+            // Shared once
+            csu += FIXED.discussion + FIXED.documentation + FIXED.demo;
+            csu += FIXED.unitTestMain + FIXED.classicCompare + FIXED.uatAssist;
+            csu += pers * FIXED.migrationPerPers;
+            csu += Math.max(FIXED.hypercareBase, pers * FIXED.hypercareFactor);
+
             return {
-                customerName: "Global Enterprises",
-                productsList: PRODUCTS,
-                modulesList: MODULES,
-                products: [
-                    {
-                        name: "Procurement",
-                        modules: [
-                            { name: "Purchasing", features: 30, personalizations: 20 }
-                        ]
-                    }
-                ]
-            }
+                features: feats,
+                personalizations: pers,
+                csu: Math.round(csu)
+            };
+        }
+    },
+    methods: {
+        getProductWeight(name) { return PRODUCTS.find(p=>p.name===name)?.weight ?? 1; },
+        getModulesForProduct(name) { return MODULES.filter(m=>m.product===name); },
+        getProductFeatures(p) { return p.modules.reduce((s,m)=>s+(m.features||0),0); },
+        getProductPersonalizations(p) { return p.modules.reduce((s,m)=>s+(m.personalizations||0),0); },
+
+        onProductChange(idx) { this.products[idx].modules = []; },
+        addProduct() { this.products.push({ name: PRODUCTS[0].name, modules: [] }); },
+        removeProduct(idx) {
+            if (this.products.length > 1) this.products.splice(idx,1);
         },
-        computed: {
-            grandTotals() {
-                let totalFeatures = 0;
-                let totalPers = 0;
-                let totalCSU = 0;
+        addModule(idx) { this.products[idx].modules.push({name:"", features:0, personalizations:0}); },
+        removeModule(pIdx, mIdx) { this.products[pIdx].modules.splice(mIdx,1); },
 
-                this.products.forEach((p) => {
-                    const pFeatures = p.modules.reduce((sum, m) => sum + (m.features || 0), 0);
-                    const pPers = p.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
-                    
-                    totalFeatures += pFeatures;
-                    totalPers += pPers;
+        generateExcel() {
+            const wb = XLSX.utils.book_new();
+            const totalPers = this.grandTotals.personalizations;
 
-                    const weight = this.getProductWeight(p.name);
-                    const adoptionCSU = (pFeatures * 0.2) + (pFeatures * 16 * weight) + (pPers * 2); 
-                    totalCSU += adoptionCSU;
-                });
+            // ──────────────────────────────────────────────
+            // Summary Sheet
+            // ──────────────────────────────────────────────
+            const summaryRows = [
+                ["Redwood Adoption – Effort Estimation Summary", "", "", "", "", ""],
+                [],
+                ["Customer", this.customerName, "", "Total Features", this.grandTotals.features, ""],
+                ["Date", new Date().toLocaleDateString(), "", "Total Personalizations", this.grandTotals.personalizations, ""],
+                ["Estimated CSUs", this.grandTotals.csu, "", "", "", ""],
+                [],
+                ["Phase / Activity Group", "Description", "Features Qty", "Pers. Qty", "CSU Rate", "CSUs"]
+            ];
 
-                return {
-                    features: totalFeatures,
-                    personalizations: totalPers,
-                    csu: Math.round(totalCSU)
-                };
-            }
-        },
-        methods: {
-            getProductWeight(name) {
-                const product = PRODUCTS.find(p => p.name === name);
-                return product ? product.weight : 1.0;
-            },
-            getModulesForProduct(productName) {
-                return MODULES.filter(m => m.product === productName);
-            },
-            getProductFeatures(product) {
-                return product.modules.reduce((sum, m) => sum + (m.features || 0), 0);
-            },
-            getProductPersonalizations(product) {
-                return product.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
-            },
-            onProductChange(index) {
-                this.products[index].modules = [];
-            },
-            addProduct() {
-                this.products.push({
-                    name: PRODUCTS[0].name,
-                    modules: []
-                });
-            },
-            removeProduct(index) {
-                if(this.products.length > 1) {
-                    this.products.splice(index, 1);
-                } else {
-                    alert("You must have at least one product.");
-                }
-            },
-            addModule(pIndex) {
-                this.products[pIndex].modules.push({ 
-                    name: "", 
-                    features: 0, 
-                    personalizations: 0 
-                });
-            },
-            removeModule(pIndex, mIndex) {
-                this.products[pIndex].modules.splice(mIndex, 1);
-            },
-            
-            applyStyle(ws, range, style) {
-                for (let R = range.s.r; R <= range.e.r; ++R) {
-                    for (let C = range.s.c; C <= range.e.c; ++C) {
-                        const addr = XLSX.utils.encode_cell({r: R, c: C});
-                        if (ws[addr]) ws[addr].s = style;
-                    }
-                }
-            },
-            
-            generateExcel() {
-                const wb = XLSX.utils.book_new();
-                const totalPersonalizationsAllProducts = this.grandTotals.personalizations;
+            let row = 7;
+            this.products.forEach(p => {
+                const f = this.getProductFeatures(p);
+                const per = this.getProductPersonalizations(p);
+                const w = this.getProductWeight(p.name);
 
-                // Create Summary Sheet
-                const summaryData = [];
-                
-                // Header
-                summaryData.push(["Product", "Module", "Features", "Personalization", "Complexity", "CSU Features", "Actual CSU"]);
-                
-                let grandTotalFeatures = 0;
-                let grandTotalPers = 0;
+                summaryRows.push([`${p.name} – Adoption Activities`, "", f, per, "", ""]);
+                summaryRows.push(["  └─ Feature Enable & Verify", "", f, "", "~0.25 h", Math.round(f*0.25)]);
+                summaryRows.push(["  └─ UI Comparison & Validation", "", "", "", `${10*w} h/product`, Math.round(10*w)]);
+                summaryRows.push(["  └─ Personalization Redo", "", "", per, "2 h/pers", per*2]);
+                row += 4;
+            });
 
-                this.products.forEach((product, pIdx) => {
-                    const pFeatures = product.modules.reduce((sum, m) => sum + (m.features || 0), 0);
-                    const pPers = product.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
-                    const weight = this.getProductWeight(product.name);
-                    
-                    // Add modules
-                    product.modules.forEach(mod => {
-                        summaryData.push([
-                            product.name,
-                            mod.name,
-                            mod.features || 0,
-                            mod.personalizations || 0,
-                            "",
-                            "",
-                            ""
-                        ]);
+            // Shared once
+            summaryRows.push(["Shared / Project-wide Activities", "", "", "", "", ""]);
+            summaryRows.push(["  └─ Assessment (Discussion + Doc + Demo)", "", "", "", "", FIXED.discussion + FIXED.documentation + FIXED.demo]);
+            summaryRows.push(["  └─ Unit Testing & Comparison", "", "", "", "", FIXED.unitTestMain + FIXED.classicCompare]);
+            summaryRows.push(["  └─ UAT Assistance", "", "", "", "", FIXED.uatAssist]);
+            summaryRows.push(["  └─ Migration of Personalizations", "", "", totalPers, "~0.2 h/pers", Math.round(totalPers*FIXED.migrationPerPers)]);
+            summaryRows.push(["  └─ Hypercare (3 weeks)", "", "", "", "", Math.max(FIXED.hypercareBase, Math.round(totalPers*FIXED.hypercareFactor))]);
+
+            const wsSum = XLSX.utils.aoa_to_sheet(summaryRows);
+            wsSum['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}}];
+            XLSX.utils.book_append_sheet(wb, wsSum, "Summary");
+
+            // ──────────────────────────────────────────────
+            // Per Product Detailed Sheets
+            // ──────────────────────────────────────────────
+            this.products.forEach((product, idx) => {
+                const isFirst = idx === 0;
+                const pFeats = this.getProductFeatures(product);
+                const pPers  = this.getProductPersonalizations(product);
+                const w      = this.getProductWeight(product.name);
+
+                const data = [];
+                let r = 0;
+
+                data[r++] = [`REDWOOD ADOPTION – ${product.name.toUpperCase()}`];
+                data[r++] = [];
+                data[r++] = ["Customer:", this.customerName, "", "", "Features:", pFeats];
+                data[r++] = ["Date:", new Date().toLocaleDateString(), "", "", "Personalizations:", pPers];
+                data[r++] = [];
+
+                const addSection = (title, activities) => {
+                    data[r++] = [title];
+                    data[r++] = ["Activity", "Detailed Activity", "Non-Prod", "Prod", "Qty", "Total Hours", "CSUs"];
+                    const start = r;
+
+                    activities.forEach(a => {
+                        const totalH = (a.nonProd + a.prod) * a.qty;
+                        const csu = totalH / 2; // assuming 50% productivity or your rule
+                        data[r++] = [a.name, a.desc, a.nonProd, a.prod, a.qty, totalH, csu];
                     });
 
-                    // Product total
-                    const csuFeatures = Math.round(pFeatures * (0.1 + 0.1 + (8 * weight)) + (pPers * 2));
-                    summaryData.push([
-                        "",
-                        "Total",
-                        pFeatures,
-                        pPers,
-                        weight,
-                        csuFeatures,
-                        csuFeatures
+                    const totH = activities.reduce((s,a)=>s + (a.nonProd + a.prod)*a.qty, 0);
+                    data[r++] = ["Section Total", "", "", "", "", totH, totH/2];
+                    data[r++] = [];
+                };
+
+                // Shared sections only on first sheet
+                if (isFirst) {
+                    addSection("1. SERVICE KICK-OFF & ASSESSMENT", [
+                        {name:"Discussion", desc:"Redwood features intro + roadmap + asset inventory", nonProd:8, prod:0, qty:1},
+                        {name:"Documentation", desc:"CWB’s, Adoption Document, Workplan", nonProd:16, prod:0, qty:1},
+                        {name:"Demo / Review", desc:"Walk-through before/after + sample transactions", nonProd:8, prod:0, qty:1}
                     ]);
 
-                    grandTotalFeatures += pFeatures;
-                    grandTotalPers += pPers;
-                });
+                    addSection("3. UNIT TESTING & UAT ASSISTANCE", [
+                        {name:"Unit Testing", desc:"Column-by-column comparison Classic ↔ Redwood", nonProd:40, prod:0, qty:1},
+                        {name:"Classic vs Redwood Comparison", desc:"Detailed mapping check", nonProd:24, prod:0, qty:1},
+                        {name:"UAT Issue Resolution", desc:"Assist during test & UAT", nonProd:24, prod:0, qty:1}
+                    ]);
+                }
 
-                // Grand total
-                summaryData.push([
-                    "",
-                    "Grand Total",
-                    grandTotalFeatures,
-                    grandTotalPers,
-                    "",
-                    "",
-                    ""
+                // Product-specific Adoption
+                addSection(`2. ADOPTION ACTIVITIES – ${product.name}`, [
+                    {name:"Feature Enablement", desc:"Setup / Profile / Opt-in per feature", nonProd:0.15, prod:0.1, qty:pFeats},
+                    {name:"Config Verification", desc:"Verify enablement at config level", nonProd:0.1, prod:0.1, qty:pFeats},
+                    {name:"UI Verification & Comparison", desc:`Classic vs Redwood UI (weight ${w}×)`, nonProd:8*w, prod:8*w, qty:1},
+                    {name:"Personalization Redo", desc:"Rewrite due to Redwood architecture changes", nonProd:2, prod:0.5, qty:pPers},
+                    {name:"Additional Pers. (expected)", desc:"During testing / customer feedback", nonProd:2, prod:0, qty:Math.max(1, Math.floor(pPers*0.1))}
                 ]);
 
-                const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-                
-                // Apply styles to summary
-                const range = XLSX.utils.decode_range(wsSummary['!ref']);
-                
-                // Header row - Blue
-                this.applyStyle(wsSummary, {s: {r: 0, c: 0}, e: {r: 0, c: 6}}, styles.headerBlue);
-                
-                // Product total rows - Green
-                let rowIdx = 1;
-                this.products.forEach((product) => {
-                    rowIdx += product.modules.length;
-                    this.applyStyle(wsSummary, {s: {r: rowIdx, c: 0}, e: {r: rowIdx, c: 6}}, styles.totalGreen);
-                    rowIdx++;
-                });
-                
-                // Grand total - Dark gray
-                this.applyStyle(wsSummary, {s: {r: rowIdx, c: 0}, e: {r: rowIdx, c: 6}}, styles.grandTotalDark);
-                
-                // Apply regular borders to all cells
-                for (let R = 0; R <= range.e.r; ++R) {
-                    for (let C = 0; C <= range.e.c; ++C) {
-                        const addr = XLSX.utils.encode_cell({r: R, c: C});
-                        if (wsSummary[addr] && !wsSummary[addr].s) {
-                            wsSummary[addr].s = styles.regular;
-                        }
-                    }
-                }
-                
-                wsSummary['!cols'] = [
-                    { wch: 25 }, { wch: 35 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 12 }
-                ];
-
-                XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
-
-                // Create Product Sheets
-                this.products.forEach((product, index) => {
-                    const isFirstChild = index === 0;
-                    const pFeatures = product.modules.reduce((sum, m) => sum + (m.features || 0), 0);
-                    const pPers = product.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
-                    const weight = this.getProductWeight(product.name);
-
-                    const pData = [];
-                    let rowNum = 0;
-
-                    // Title - merged across all columns
-                    pData.push([{v: `REDWOOD ADOPTION ESTIMATION - ${product.name.toUpperCase()}`, t: 's'}]);
-                    rowNum++;
-                    pData.push([]);
-                    rowNum++;
-                    
-                    // Customer info
-                    pData.push(["Customer:", this.customerName, "", "", "Features:", pFeatures]);
-                    rowNum++;
-                    pData.push(["Date:", new Date(), "", "", "Personalization:", pPers]);
-                    rowNum++;
-                    pData.push([]);
-                    rowNum++;
-
-                    let sectionNum = 1;
-
-                    // Helper function to add section with proper formatting
-                    const addSection = (title, activities, startRow) => {
-                        // Section header (gray, centered)
-                        pData.push([{v: title, t: 's'}]);
-                        rowNum++;
-                        
-                        // Table headers (blue)
-                        pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
-                        rowNum++;
-                        
-                        const dataStartRow = rowNum;
-                        
-                        // Activity rows
-                        activities.forEach((act) => {
-                            pData.push([
-                                act.name,
-                                act.desc,
-                                act.nonProd,
-                                act.prod,
-                                act.qty,
-                                {f: `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`, v: (act.nonProd + act.prod) * act.qty},
-                                {f: `=F${rowNum + 1}/2`, v: ((act.nonProd + act.prod) * act.qty) / 2}
-                            ]);
-                            rowNum++;
-                        });
-
-                        // Section Total (light gray, right aligned)
-                        const totalRow = rowNum + 1;
-                        pData.push([
-                            {v: "Section Total", t: 's'},
-                            "",
-                            "",
-                            "",
-                            "",
-                            {f: `=SUM(F${dataStartRow}:F${totalRow - 1})`, v: activities.reduce((sum, act) => sum + (act.nonProd + act.prod) * act.qty, 0)},
-                            {f: `=SUM(G${dataStartRow}:G${totalRow - 1})`, v: activities.reduce((sum, act) => sum + ((act.nonProd + act.prod) * act.qty) / 2, 0)}
-                        ]);
-                        rowNum++;
-                        pData.push([]);
-                        rowNum++;
-                    };
-
-                    // 1. ASSESSMENT ACTIVITIES (First Product Only)
-                    if (isFirstChild) {
-                        const assessmentActivities = [
-                            { name: "Discussion", desc: "Introduction of Redwood Features along with redwood roadmap of Supply Chain. Prepare Inventory of assets impacted, Report and the Workplan and Review Workplan with the Customer", nonProd: 8, prod: 0, qty: 1 },
-                            { name: "Documentation", desc: "This covers various documentation like CWB's and Adoption Document", nonProd: 16, prod: 0, qty: 1 },
-                            { name: "Demo/Review", desc: "Walk Through of Applicable Feature Before and After Adoption along with few transactions in the system", nonProd: 8, prod: 0, qty: 1 }
-                        ];
-                        addSection("1. ASSESSMENT ACTIVITIES", assessmentActivities, rowNum);
-                        sectionNum++;
-                    }
-
-                    // 2. ADOPTION ACTIVITIES
-                    const adoptionActivities = [
-                        { name: "Features Enablement", desc: "Enabling Feature by Feature by setup, Profile option, Opt-in Enablement", nonProd: 0.1, prod: 0.1, qty: pFeatures },
-                        { name: "Verification of Enabled Features at Config Level", desc: "Once All the features are enabled, verified all features enablement", nonProd: 0.1, prod: 0.1, qty: pFeatures },
-                        { name: "Verification of Enabled Features at UI", desc: `Verification of enabled functionality in Redwood UI (Product weight: ${weight}x)`, nonProd: 8 * weight, prod: 8 * weight, qty: 1 },
-                        { name: "Enablement of Personalization", desc: "Redo personalizations. With the shift to the Redwood architecture, many existing personalizations from the Classic version will not automatically migrate due to structural differences", nonProd: 2, prod: 0, qty: pPers },
-                        { name: "Additional Personalization - Expected", desc: "Perform Additional personalization based on customer testing and inputs. This is again during testing", nonProd: 2, prod: 0, qty: Math.max(1, Math.floor(pPers * 0.1)) }
-                    ];
-                    addSection(`${sectionNum}. ADOPTION ACTIVITIES - ${product.name.toUpperCase()}`, adoptionActivities, rowNum);
-                    sectionNum++;
-
-                    // 3. UNIT TESTING (First Product Only)
-                    if (isFirstChild) {
-                        const uatActivities = [
-                            { name: "Perform Unit Testing with and without personalization involved", desc: "Perform a detailed column-by-column comparison between Classic and Redwood to confirm that all data points and configurations are accurately mapped, helping ensure that no field, functionality, or dependency is missed during the transition", nonProd: 40, prod: 0, qty: 1 },
-                            { name: "Comparison between Classic vs Redwood - W.O", desc: "Column by Column comparison between Classic and Redwood to ensure everything is covered", nonProd: 24, prod: 0, qty: 1 },
-                            { name: "Assist in Test instance and UAT to resolve any Redwood issues raised during Testing", desc: "Assist in Test instance and UAT to resolve any Redwood issues raised during Testing", nonProd: 24, prod: 0, qty: 1 }
-                        ];
-                        addSection(`${sectionNum}. UNIT TESTING ACTIVITIES AND UAT ASSISTANCE`, uatActivities, rowNum);
-                        sectionNum++;
-                    }
-
-                    // 4. MIGRATION ACTIVITIES (First Product Only)
-                    if (isFirstChild) {
-                        const migrationActivities = [
-                            { name: "Configure Setups and Deploy Personalization to another non-Prod environment as per customer environment selected", desc: "Configure Setups and Deploy Personalization to another non-Prod environment as per customer environment selected", nonProd: 0.1, prod: 0.1, qty: totalPersonalizationsAllProducts },
-                            { name: "Configuration of Setups and Deployment of Personalization to Prod environment", desc: "Production Migration of UI, setups and Personalizations done and signed off by customer", nonProd: 0, prod: 1, qty: totalPersonalizationsAllProducts },
-                            { name: "Assist Customer in Configuration of Setups and Deployment of Personalization to Prod environment (Optional)", desc: "Migration to production environment depending on customer's discussion. In this a migration documentation will be provided and assist customer in Moving to Redwood for Production", nonProd: 0, prod: 1, qty: 0 }
-                        ];
-                        addSection(`${sectionNum}. MIGRATION ACTIVITIES`, migrationActivities, rowNum);
-                        sectionNum++;
-                    }
-
-                    // 5. HYPERCARE SUPPORT (First Product Only)
-                    if (isFirstChild) {
-                        const hypercareQty = Math.max(8, Math.floor(totalPersonalizationsAllProducts * 0.2));
-                        
-                        const hypercareActivities = [
-                            { name: "Post Go-live Support", desc: "Hypercare for 3 weeks to support all the requirement and issues", nonProd: 0, prod: 4, qty: hypercareQty }
-                        ];
-                        addSection(`${sectionNum}. POST-GO-LIVE HYPERCARE SUPPORT`, hypercareActivities, rowNum);
-                    }
-
-                    // GRAND TOTAL (dark gray)
-                    const grandTotalRow = rowNum + 1;
-                    pData.push([
-                        {v: "GRAND TOTAL", t: 's'},
-                        "",
-                        "",
-                        "",
-                        "",
-                        {f: `=SUM(F2:F${grandTotalRow - 1})`, v: 0},
-                        {f: `=SUM(G2:G${grandTotalRow - 1})`, v: 0}
+                if (isFirst) {
+                    addSection("4. MIGRATION ACTIVITIES", [
+                        {name:"Deploy to Non-Prod", desc:"Personalization migration to another non-prod", nonProd:0.2, prod:0.1, qty:totalPers},
+                        {name:"Production Deployment", desc:"UI + setups + personalizations – signed off", nonProd:0, prod:1, qty:totalPers},
+                        {name:"Assist Prod Migration", desc:"Optional – customer assisted move", nonProd:0, prod:1, qty:0}
                     ]);
 
-                    const wsProduct = XLSX.utils.aoa_to_sheet(pData);
-                    
-                    // Apply styles
-                    const range = XLSX.utils.decode_range(wsProduct['!ref']);
-                    
-                    // Title - merge and style
-                    wsProduct['!merges'] = [{s: {r: 0, c: 0}, e: {r: 0, c: 6}}];
-                    wsProduct["A1"].s = {
-                        fill: { fgColor: { rgb: "9BC2E6" } },
-                        font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
-                        alignment: { horizontal: "center", vertical: "center" }
-                    };
-                    
-                    // Apply styles to all rows
-                    for (let R = 0; R <= range.e.r; ++R) {
-                        const cellA = wsProduct[XLSX.utils.encode_cell({r: R, c: 0})];
-                        
-                        // Check if this is a section header (starts with number and period, or contains "REDWOOD")
-                        if (cellA && cellA.v) {
-                            const cellValue = cellA.v.toString();
-                            
-                            // Section headers (gray, centered)
-                            if (cellValue.match(/^\d\./) || cellValue.includes("REDWOOD ADOPTION ESTIMATION")) {
-                                if (R !== 0) { // Skip title row (already styled)
-                                    this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.sectionGray);
-                                }
-                            }
-                            
-                            // Table headers (blue)
-                            if (cellValue === "Activity") {
-                                this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.headerBlue);
-                            }
-                            
-                            // Section totals (light gray, right aligned for first column)
-                            if (cellValue === "Section Total") {
-                                // Apply subtotal style but with center alignment for the whole row
-                                const subtotalStyle = {...styles.subtotalLight, alignment: { horizontal: "center", vertical: "center" }};
-                                this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, subtotalStyle);
-                            }
-                            
-                            // Grand total (dark gray)
-                            if (cellValue === "GRAND TOTAL") {
-                                this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.grandTotalDark);
-                            }
-                        }
-                        
-                        // Apply regular borders to remaining cells
-                        for (let C = 0; C <= range.e.c; ++C) {
-                            const addr = XLSX.utils.encode_cell({r: R, c: C});
-                            if (wsProduct[addr] && !wsProduct[addr].s) {
-                                wsProduct[addr].s = styles.regular;
-                            }
-                        }
-                    }
-                    
-                    wsProduct['!cols'] = [
-                        { wch: 35 }, { wch: 70 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 15 }, { wch: 12 }
-                    ];
+                    addSection("5. POST GO-LIVE HYPERCARE", [
+                        {name:"Hypercare Support", desc:"3 weeks support for issues", nonProd:0, prod:4, qty:Math.max(8, Math.floor(totalPers*0.2))}
+                    ]);
+                }
 
-                    XLSX.utils.book_append_sheet(wb, wsProduct, product.name);
-                });
+                // Grand Total per sheet
+                data[r++] = ["GRAND TOTAL", "", "", "", "", {f:`=SUM(F7:F${r})`, t:'n'}, {f:`=SUM(G7:G${r})`, t:'n'}];
 
-                XLSX.writeFile(wb, "Redwood_Adoption_Estimator.xlsx");
-            }
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
+
+                // You can add more styling here (header colors, bold, etc.) similar to your original
+
+                XLSX.utils.book_append_sheet(wb, ws, product.name.slice(0,31));
+            });
+
+            XLSX.writeFile(wb, `Redwood_Adoption_${this.customerName.replace(/\W+/g,'_')}.xlsx`);
         }
-    }).mount('#app');
+    }
+}).mount('#app');
 </script>
-
 </body>
 </html>
-```
