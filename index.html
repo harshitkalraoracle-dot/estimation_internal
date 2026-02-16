@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,101 +30,136 @@
                 <h1 class="text-2xl font-bold">Redwood Adoption Estimator</h1>
                 <p class="text-blue-200 text-sm">Web-based Calculation Tool</p>
             </div>
-            <button @click="generateExcel" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            <button @click="generateExcel" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2 transition shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
                 Download Excel
             </button>
         </div>
 
         <div class="p-8">
             <!-- Configuration Section -->
-            <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Customer Name</label>
-                    <input v-model="customerName" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g. Global Enterprises">
-                </div>
-                <div class="flex items-end">
-                    <button @click="addProduct" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full transition">
-                        + Add New Product
-                    </button>
+            <div class="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 text-gray-800">Configuration</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Customer Name</label>
+                        <input v-model="customerName" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500" placeholder="e.g. Global Enterprises">
+                    </div>
                 </div>
             </div>
 
             <!-- Products List -->
-            <div v-for="(product, pIndex) in products" :key="pIndex" class="mb-8 border rounded-lg p-6 bg-gray-50 relative group">
+            <div class="mb-6">
+                <h2 class="text-lg font-bold mb-4 text-gray-800">Products & Modules</h2>
+            </div>
+            
+            <div v-for="(product, pIndex) in products" :key="pIndex" class="mb-6 border-2 border-gray-300 rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition">
                 
                 <!-- Product Header -->
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <div class="flex items-center gap-3">
-                        <select v-model="product.name" class="text-lg font-bold bg-transparent border-none focus:ring-0 p-0 text-gray-800">
-                            <option v-for="pName in availableProductNames" :value="pName">{{ pName }}</option>
-                        </select>
-                        <span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded">Weight: {{ getProductWeight(product.name) }}x</span>
+                <div class="flex justify-between items-center mb-4 border-b-2 border-blue-100 pb-3">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Product</label>
+                            <select v-model="product.name" @change="onProductChange(pIndex)" class="text-lg font-bold bg-blue-50 border-2 border-blue-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 min-w-[250px]">
+                                <option v-for="p in productsList" :value="p.name">{{ p.name }} (Weight: {{ p.weight }}x)</option>
+                            </select>
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg">
+                            <span class="text-xs font-bold uppercase block">Complexity Weight</span>
+                            <span class="text-lg font-bold">{{ getProductWeight(product.name) }}x</span>
+                        </div>
                     </div>
-                    <button @click="removeProduct(pIndex)" class="text-red-500 hover:text-red-700 text-sm font-semibold">Remove Product</button>
+                    <button @click="removeProduct(pIndex)" class="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-2 px-4 rounded transition">
+                        Remove Product
+                    </button>
                 </div>
 
-                <!-- Modules Table -->
-                <table class="w-full text-sm text-left text-gray-500 mb-4">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-200">
-                        <tr>
-                            <th scope="col" class="px-4 py-3">Module Name</th>
-                            <th scope="col" class="px-4 py-3 w-32">Features</th>
-                            <th scope="col" class="px-4 py-3 w-32">Personalizations</th>
-                            <th scope="col" class="px-4 py-3 w-10"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(module, mIndex) in product.modules" :key="mIndex" class="bg-white border-b hover:bg-gray-50">
-                            <td class="px-4 py-2">
-                                <input v-model="module.name" type="text" class="w-full bg-transparent border-none focus:ring-0" placeholder="e.g. Purchasing">
-                            </td>
-                            <td class="px-4 py-2">
-                                <input v-model.number="module.features" type="number" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500 block p-1" min="0">
-                            </td>
-                            <td class="px-4 py-2">
-                                <input v-model.number="module.personalizations" type="number" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500 block p-1" min="0">
-                            </td>
-                            <td class="px-4 py-2 text-center">
-                                <button @click="removeModule(pIndex, mIndex)" class="text-red-400 hover:text-red-600">×</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <!-- Modules -->
+                <div class="space-y-3">
+                    <div v-for="(module, mIndex) in product.modules" :key="mIndex" class="flex gap-3 items-start bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Module</label>
+                            <select v-model="module.name" class="w-full bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                                <option value="">Select Module</option>
+                                <option v-for="mod in getModulesForProduct(product.name)" :value="mod.name">
+                                    {{ mod.name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="w-32">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Features</label>
+                            <input v-model.number="module.features" type="number" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-center focus:outline-none focus:border-blue-500" min="0" placeholder="0">
+                        </div>
+                        <div class="w-32">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Personalizations</label>
+                            <input v-model.number="module.personalizations" type="number" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-center focus:outline-none focus:border-blue-500" min="0" placeholder="0">
+                        </div>
+                        <div class="pt-6">
+                            <button @click="removeModule(pIndex, mIndex)" class="text-red-500 hover:text-red-700 font-bold text-xl px-2">
+                                ×
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                <button @click="addModule(pIndex)" class="text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center gap-1">
-                    + Add Module
+                <button @click="addModule(pIndex)" class="mt-4 bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-2 px-4 rounded transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Add Module
                 </button>
 
                 <!-- Product Summary -->
-                <div class="mt-4 bg-white p-3 rounded border border-gray-200 flex justify-between items-center text-sm">
-                    <div class="text-gray-600">
-                        <span class="font-bold">{{ product.modules.reduce((sum, m) => sum + m.features, 0) }}</span> Features &nbsp;|&nbsp;
-                        <span class="font-bold">{{ product.modules.reduce((sum, m) => sum + m.personalizations, 0) }}</span> Personalizations
+                <div class="mt-4 bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center">
+                    <div class="flex gap-6">
+                        <div class="text-center">
+                            <div class="text-xs text-gray-500 uppercase font-bold">Total Features</div>
+                            <div class="text-2xl font-bold text-blue-700">{{ getProductFeatures(product) }}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-500 uppercase font-bold">Total Personalizations</div>
+                            <div class="text-2xl font-bold text-green-700">{{ getProductPersonalizations(product) }}</div>
+                        </div>
                     </div>
-                    <div class="text-gray-400 text-xs">Complexity Weight applied in calculation</div>
+                    <div class="text-gray-400 text-xs">
+                        Complexity weight will be applied in calculations
+                    </div>
                 </div>
             </div>
 
+            <button @click="addProduct" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add New Product
+            </button>
+
             <!-- Grand Total Summary -->
-            <div class="bg-gray-800 text-white p-6 rounded-lg mt-8">
-                <h3 class="text-xl font-bold mb-4">Estimation Summary</h3>
+            <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-lg mt-8 shadow-xl">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Estimation Summary
+                </h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                        <div class="text-gray-400 text-xs uppercase">Total Features</div>
-                        <div class="text-2xl font-bold">{{ grandTotals.features }}</div>
+                    <div class="bg-white/10 p-4 rounded-lg">
+                        <div class="text-gray-300 text-xs uppercase font-bold">Total Features</div>
+                        <div class="text-3xl font-bold text-blue-300">{{ grandTotals.features }}</div>
                     </div>
-                    <div>
-                        <div class="text-gray-400 text-xs uppercase">Total Personalizations</div>
-                        <div class="text-2xl font-bold">{{ grandTotals.personalizations }}</div>
+                    <div class="bg-white/10 p-4 rounded-lg">
+                        <div class="text-gray-300 text-xs uppercase font-bold">Total Personalizations</div>
+                        <div class="text-3xl font-bold text-green-300">{{ grandTotals.personalizations }}</div>
                     </div>
-                    <div>
-                        <div class="text-gray-400 text-xs uppercase">Est. CSU (Hours)</div>
-                        <div class="text-2xl font-bold text-green-400">{{ grandTotals.csu }}</div>
+                    <div class="bg-white/10 p-4 rounded-lg">
+                        <div class="text-gray-300 text-xs uppercase font-bold">Est. CSU (Hours)</div>
+                        <div class="text-3xl font-bold text-yellow-300">{{ grandTotals.csu }}</div>
                     </div>
-                    <div>
-                        <div class="text-gray-400 text-xs uppercase">Products</div>
-                        <div class="text-2xl font-bold">{{ products.length }}</div>
+                    <div class="bg-white/10 p-4 rounded-lg">
+                        <div class="text-gray-300 text-xs uppercase font-bold">Products</div>
+                        <div class="text-3xl font-bold text-purple-300">{{ products.length }}</div>
                     </div>
                 </div>
             </div>
@@ -134,29 +170,92 @@
 <script>
     const { createApp } = Vue;
 
+    const PRODUCTS = [
+        { name: "SCM Common Components", weight: 0.5 },
+        { name: "Inventory Management", weight: 1.2 },
+        { name: "Maintenance", weight: 1.2 },
+        { name: "Manufacturing", weight: 1.5 },
+        { name: "Order Management", weight: 1.0 },
+        { name: "Collaboration Messaging Framework", weight: 1.0 },
+        { name: "Procurement", weight: 1.0 },
+        { name: "Product Hub", weight: 1.0 },
+        { name: "Purchasing", weight: 1.0 },
+        { name: "Quality Management", weight: 1.1 },
+        { name: "Self Service Procurement & RSSP", weight: 1.0 },
+        { name: "Supply Chain Collaboration", weight: 1.0 },
+        { name: "Supply Chain Orchestration", weight: 1.1 },
+        { name: "Supply Chain Planning", weight: 1.2 }
+    ];
+
+    const MODULES = [
+        { name: "SCM Common Components", count: 1, product: "SCM Common Components" },
+        { name: "Configuration and Extensibility", count: 1, product: "SCM Common Components" },
+        { name: "Journeys", count: 3, product: "SCM Common Components" },
+        { name: "Advanced Inventory Management", count: 8, product: "Inventory Management" },
+        { name: "Configure to order", count: 1, product: "Inventory Management" },
+        { name: "Cost Management", count: 43, product: "Inventory Management" },
+        { name: "E-signatures & E- records", count: 2, product: "Inventory Management" },
+        { name: "Fiscal Document Capture", count: 5, product: "Inventory Management" },
+        { name: "Intrastat", count: 2, product: "Inventory Management" },
+        { name: "Inventory Management", count: 68, product: "Inventory Management" },
+        { name: "Land Cost Management", count: 12, product: "Inventory Management" },
+        { name: "Mobile Inventory", count: 18, product: "Inventory Management" },
+        { name: "Product Recall Management", count: 1, product: "Inventory Management" },
+        { name: "Receipt Accounting", count: 6, product: "Inventory Management" },
+        { name: "Receiving", count: 25, product: "Inventory Management" },
+        { name: "Shipping", count: 14, product: "Inventory Management" },
+        { name: "Supply Chain Financial Orchestration", count: 8, product: "Inventory Management" },
+        { name: "Maintenance", count: 22, product: "Maintenance" },
+        { name: "Service Logistics", count: 11, product: "Maintenance" },
+        { name: "Flow Manufacturing", count: 7, product: "Manufacturing" },
+        { name: "Kanban", count: 3, product: "Manufacturing" },
+        { name: "Manufacturing", count: 38, product: "Manufacturing" },
+        { name: "Smart Operations", count: 36, product: "Manufacturing" },
+        { name: "Channel Revenue Management", count: 9, product: "Order Management" },
+        { name: "Configration", count: 3, product: "Order Management" },
+        { name: "Global Order Promising", count: 13, product: "Order Management" },
+        { name: "Order Management", count: 26, product: "Order Management" },
+        { name: "Pricing", count: 18, product: "Order Management" },
+        { name: "Collaboration Messaging Framework", count: 19, product: "Collaboration Messaging Framework" },
+        { name: "Common Procurement", count: 3, product: "Procurement" },
+        { name: "External Purchase Prices", count: 3, product: "Procurement" },
+        { name: "Procurement Contracts", count: 2, product: "Procurement" },
+        { name: "Sourcing", count: 38, product: "Procurement" },
+        { name: "Spend Classification", count: 2, product: "Procurement" },
+        { name: "SQM", count: 4, product: "Procurement" },
+        { name: "Supplier Model", count: 14, product: "Procurement" },
+        { name: "Supplier Portal", count: 3, product: "Procurement" },
+        { name: "Supplier Qualification Management", count: 6, product: "Procurement" },
+        { name: "Product Management", count: 15, product: "Product Hub" },
+        { name: "Product Development", count: 7, product: "Product Hub" },
+        { name: "Product Development & Product Hub Common", count: 2, product: "Product Hub" },
+        { name: "Product Hub", count: 3, product: "Product Hub" },
+        { name: "Product Lifecycle Management Common", count: 3, product: "Product Hub" },
+        { name: "Purchasing", count: 65, product: "Purchasing" },
+        { name: "Quality Inspection Management", count: 11, product: "Quality Management" },
+        { name: "Redwood Self Service Procurement", count: 75, product: "Self Service Procurement & RSSP" },
+        { name: "Self Service Procurement", count: 3, product: "Self Service Procurement & RSSP" },
+        { name: "Responsive Self Service Procurement", count: 32, product: "Self Service Procurement & RSSP" },
+        { name: "Supply Chain Collaboration", count: 12, product: "Supply Chain Collaboration" },
+        { name: "Supply Chain Orchestration", count: 25, product: "Supply Chain Orchestration" },
+        { name: "Backlog Management", count: 5, product: "Supply Chain Planning" },
+        { name: "Demand Management", count: 34, product: "Supply Chain Planning" },
+        { name: "Replenishment Planning", count: 40, product: "Supply Chain Planning" },
+        { name: "Sales and Operations Planning", count: 39, product: "Supply Chain Planning" },
+        { name: "Supply Planning", count: 57, product: "Supply Chain Planning" }
+    ];
+
     createApp({
         data() {
             return {
                 customerName: "Global Enterprises",
-                availableProductNames: [
-                    "SCM Common Components", "Inventory Management", "Maintenance", "Manufacturing",
-                    "Order Management", "Collaboration Messaging Framework", "Procurement",
-                    "Product Hub", "Purchasing", "Quality Management", "Self Service Procurement & RSSP",
-                    "Supply Chain Collaboration", "Supply Chain Orchestration", "Supply Chain Planning"
-                ],
-                productWeights: {
-                    "SCM Common Components": 0.5, "Inventory Management": 1.2, "Maintenance": 1.2,
-                    "Manufacturing": 1.5, "Order Management": 1.0, "Collaboration Messaging Framework": 1.0,
-                    "Procurement": 1.0, "Product Hub": 1.0, "Purchasing": 1.0, "Quality Management": 1.1,
-                    "Self Service Procurement & RSSP": 1.0, "Supply Chain Collaboration": 1.0,
-                    "Supply Chain Orchestration": 1.1, "Supply Chain Planning": 1.2
-                },
+                productsList: PRODUCTS,
+                modulesList: MODULES,
                 products: [
                     {
                         name: "Procurement",
                         modules: [
-                            { name: "Purchasing", features: 30, personalizations: 20 },
-                            { name: "Sourcing", features: 0, personalizations: 0 }
+                            { name: "Purchasing", features: 30, personalizations: 20 }
                         ]
                     }
                 ]
@@ -168,9 +267,9 @@
                 let totalPers = 0;
                 let totalCSU = 0;
 
-                this.products.forEach((p, index) => {
-                    const pFeatures = p.modules.reduce((sum, m) => sum + m.features, 0);
-                    const pPers = p.modules.reduce((sum, m) => sum + m.personalizations, 0);
+                this.products.forEach((p) => {
+                    const pFeatures = p.modules.reduce((sum, m) => sum + (m.features || 0), 0);
+                    const pPers = p.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
                     
                     totalFeatures += pFeatures;
                     totalPers += pPers;
@@ -189,12 +288,26 @@
         },
         methods: {
             getProductWeight(name) {
-                return this.productWeights[name] || 1.0;
+                const product = PRODUCTS.find(p => p.name === name);
+                return product ? product.weight : 1.0;
+            },
+            getModulesForProduct(productName) {
+                return MODULES.filter(m => m.product === productName);
+            },
+            getProductFeatures(product) {
+                return product.modules.reduce((sum, m) => sum + (m.features || 0), 0);
+            },
+            getProductPersonalizations(product) {
+                return product.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
+            },
+            onProductChange(index) {
+                // Clear modules when product changes
+                this.products[index].modules = [];
             },
             addProduct() {
                 this.products.push({
-                    name: "Procurement",
-                    modules: [{ name: "New Module", features: 0, personalizations: 0 }]
+                    name: PRODUCTS[0].name,
+                    modules: []
                 });
             },
             removeProduct(index) {
@@ -205,7 +318,11 @@
                 }
             },
             addModule(pIndex) {
-                this.products[pIndex].modules.push({ name: "New Module", features: 0, personalizations: 0 });
+                this.products[pIndex].modules.push({ 
+                    name: "", 
+                    features: 0, 
+                    personalizations: 0 
+                });
             },
             removeModule(pIndex, mIndex) {
                 this.products[pIndex].modules.splice(mIndex, 1);
@@ -215,40 +332,35 @@
                 const wb = XLSX.utils.book_new();
                 const totalPersonalizationsAllProducts = this.grandTotals.personalizations;
 
-                // 1. Create Summary Sheet with proper formatting
+                // Create Summary Sheet
                 const summaryData = [];
                 
-                // Header row
+                // Header
                 summaryData.push(["Product", "Module", "Features", "Personalization", "Complexity", "CSU Features", "Actual CSU"]);
                 
                 let grandTotalFeatures = 0;
                 let grandTotalPers = 0;
-                let grandTotalCSUFeatures = 0;
-                let grandTotalActualCSU = 0;
 
-                this.products.forEach((product, pIdx) => {
-                    const pFeatures = product.modules.reduce((sum, m) => sum + m.features, 0);
-                    const pPers = product.modules.reduce((sum, m) => sum + m.personalizations, 0);
+                this.products.forEach((product) => {
+                    const pFeatures = product.modules.reduce((sum, m) => sum + (m.features || 0), 0);
+                    const pPers = product.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
                     const weight = this.getProductWeight(product.name);
                     
-                    // Calculate CSU for this product (simplified for summary)
-                    const csuFeatures = Math.round(pFeatures * (0.1 + 0.1 + (8 * weight)) + (pPers * 2));
-                    const actualCSU = csuFeatures;
-
                     // Add modules
                     product.modules.forEach(mod => {
                         summaryData.push([
                             product.name,
                             mod.name,
-                            mod.features,
-                            mod.personalizations,
+                            mod.features || 0,
+                            mod.personalizations || 0,
                             "",
                             "",
                             ""
                         ]);
                     });
 
-                    // Product total row
+                    // Product total
+                    const csuFeatures = Math.round(pFeatures * (0.1 + 0.1 + (8 * weight)) + (pPers * 2));
                     summaryData.push([
                         "",
                         "Total",
@@ -256,92 +368,83 @@
                         pPers,
                         weight,
                         csuFeatures,
-                        actualCSU
+                        csuFeatures
                     ]);
 
                     grandTotalFeatures += pFeatures;
                     grandTotalPers += pPers;
-                    grandTotalCSUFeatures += csuFeatures;
-                    grandTotalActualCSU += actualCSU;
                 });
 
-                // Grand total row
+                // Grand total
                 summaryData.push([
                     "",
                     "Grand Total",
                     grandTotalFeatures,
                     grandTotalPers,
                     "",
-                    grandTotalCSUFeatures,
-                    grandTotalActualCSU
+                    "",
+                    ""
                 ]);
 
                 const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-                
-                // Set column widths for summary
                 wsSummary['!cols'] = [
                     { wch: 25 }, { wch: 35 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 12 }
                 ];
 
+                // Apply styles to summary
+                const range = XLSX.utils.decode_range(wsSummary['!ref']);
+                
+                // Header row style (blue)
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const addr = XLSX.utils.encode_cell({r: 0, c: C});
+                    if (!wsSummary[addr]) continue;
+                    wsSummary[addr].s = {
+                        fill: { fgColor: { rgb: "9BC2E6" } },
+                        font: { bold: true, color: { rgb: "FFFFFF" } },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "thin", color: { rgb: "000000" } },
+                            bottom: { style: "thin", color: { rgb: "000000" } },
+                            left: { style: "thin", color: { rgb: "000000" } },
+                            right: { style: "thin", color: { rgb: "000000" } }
+                        }
+                    };
+                }
+
                 XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
 
-                // 2. Create Product Sheets
+                // Create Product Sheets
                 this.products.forEach((product, index) => {
                     const isFirstChild = index === 0;
-                    const pFeatures = product.modules.reduce((sum, m) => sum + m.features, 0);
-                    const pPers = product.modules.reduce((sum, m) => sum + m.personalizations, 0);
+                    const pFeatures = product.modules.reduce((sum, m) => sum + (m.features || 0), 0);
+                    const pPers = product.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
                     const weight = this.getProductWeight(product.name);
 
                     const pData = [];
-                    
+                    let rowNum = 1;
+
                     // Title
                     pData.push([`REDWOOD ADOPTION ESTIMATION - ${product.name.toUpperCase()}`]);
+                    rowNum++;
                     pData.push([]);
+                    rowNum++;
                     
                     // Customer info
                     pData.push(["Customer:", this.customerName, "", "", "Features:", pFeatures]);
+                    rowNum++;
                     pData.push(["Date:", "=TODAY()", "", "", "Personalization:", pPers]);
+                    rowNum++;
                     pData.push([]);
+                    rowNum++;
 
                     let sectionNum = 1;
 
-                    // Helper function to add section
-                    const addSection = (title, activities) => {
-                        pData.push([title]);
-                        pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
-                        
-                        activities.forEach((act, actIdx) => {
-                            const rowNum = pData.length + 1;
-                            const rowLetter = String.fromCharCode(65 + (actIdx % 26));
-                            pData.push([
-                                act.name,
-                                act.desc,
-                                act.nonProd,
-                                act.prod,
-                                act.qty,
-                                `=(C${rowNum}+D${rowNum})*E${rowNum}`,
-                                `=F${rowNum}/2`
-                            ]);
-                        });
-
-                        // Section total
-                        const totalRow = pData.length + 1;
-                        pData.push([
-                            "Section Total",
-                            "",
-                            "",
-                            "",
-                            "",
-                            `=SUM(F${totalRow-activities.length}:F${totalRow-1})`,
-                            `=SUM(G${totalRow-activities.length}:G${totalRow-1})`
-                        ]);
-                        pData.push([]);
-                    };
-
-                    // 1. Assessment Activities (First Product Only)
+                    // 1. ASSESSMENT ACTIVITIES (First Product Only)
                     if (isFirstChild) {
                         pData.push(["1. ASSESSMENT ACTIVITIES"]);
+                        rowNum++;
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
+                        rowNum++;
                         
                         const assessmentActivities = [
                             { name: "Discussion", desc: "Introduction of Redwood Features along with redwood roadmap of Supply Chain. Prepare Inventory of assets impacted, Report and the Workplan and Review Workplan with the Customer", nonProd: 8, prod: 0, qty: 1 },
@@ -349,8 +452,8 @@
                             { name: "Demo/Review", desc: "Walk Through of Applicable Feature Before and After Adoption along with few transactions in the system", nonProd: 8, prod: 0, qty: 1 }
                         ];
 
-                        assessmentActivities.forEach((act, idx) => {
-                            const rowNum = pData.length + 1;
+                        const assessmentStart = rowNum;
+                        assessmentActivities.forEach((act) => {
                             pData.push([
                                 act.name,
                                 act.desc,
@@ -360,25 +463,22 @@
                                 `=(C${rowNum}+D${rowNum})*E${rowNum}`,
                                 `=F${rowNum}/2`
                             ]);
+                            rowNum++;
                         });
 
-                        const totalRow = pData.length + 1;
-                        pData.push([
-                            "Section Total",
-                            "",
-                            "",
-                            "",
-                            "",
-                            `=SUM(F${totalRow-3}:F${totalRow-1})`,
-                            `=SUM(G${totalRow-3}:G${totalRow-1})`
-                        ]);
+                        // Section Total
+                        pData.push(["Section Total", "", "", "", "", `=SUM(F${assessmentStart}:F${rowNum-1})`, `=SUM(G${assessmentStart}:G${rowNum-1})`]);
+                        rowNum++;
                         pData.push([]);
+                        rowNum++;
                         sectionNum++;
                     }
 
-                    // 2. Adoption Activities (All Products)
+                    // 2. ADOPTION ACTIVITIES
                     pData.push([`${sectionNum}. ADOPTION ACTIVITIES - ${product.name.toUpperCase()}`]);
+                    rowNum++;
                     pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
+                    rowNum++;
                     
                     const adoptionActivities = [
                         { name: "Features Enablement", desc: "Enabling Feature by Feature by setup, Profile option, Opt-in Enablement", nonProd: 0.1, prod: 0.1, qty: pFeatures },
@@ -388,8 +488,8 @@
                         { name: "Additional Personalization - Expected", desc: "Perform Additional personalization based on customer testing and inputs. This is again during testing", nonProd: 2, prod: 0, qty: Math.max(1, Math.floor(pPers * 0.1)) }
                     ];
 
-                    adoptionActivities.forEach((act, idx) => {
-                        const rowNum = pData.length + 1;
+                    const adoptionStart = rowNum;
+                    adoptionActivities.forEach((act) => {
                         pData.push([
                             act.name,
                             act.desc,
@@ -399,25 +499,21 @@
                             `=(C${rowNum}+D${rowNum})*E${rowNum}`,
                             `=F${rowNum}/2`
                         ]);
+                        rowNum++;
                     });
 
-                    const adoptionTotalRow = pData.length + 1;
-                    pData.push([
-                        "Section Total",
-                        "",
-                        "",
-                        "",
-                        "",
-                        `=SUM(F${adoptionTotalRow-5}:F${adoptionTotalRow-1})`,
-                        `=SUM(G${adoptionTotalRow-5}:G${adoptionTotalRow-1})`
-                    ]);
+                    pData.push(["Section Total", "", "", "", "", `=SUM(F${adoptionStart}:F${rowNum-1})`, `=SUM(G${adoptionStart}:G${rowNum-1})`]);
+                    rowNum++;
                     pData.push([]);
+                    rowNum++;
                     sectionNum++;
 
-                    // 3. Unit Testing Activities (First Product Only)
+                    // 3. UNIT TESTING (First Product Only)
                     if (isFirstChild) {
                         pData.push([`${sectionNum}. UNIT TESTING ACTIVITIES AND UAT ASSISTANCE`]);
+                        rowNum++;
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
+                        rowNum++;
                         
                         const uatActivities = [
                             { name: "Perform Unit Testing with and without personalization involved", desc: "Perform a detailed column-by-column comparison between Classic and Redwood to confirm that all data points and configurations are accurately mapped, helping ensure that no field, functionality, or dependency is missed during the transition", nonProd: 40, prod: 0, qty: 1 },
@@ -425,8 +521,8 @@
                             { name: "Assist in Test instance and UAT to resolve any Redwood issues raised during Testing", desc: "Assist in Test instance and UAT to resolve any Redwood issues raised during Testing", nonProd: 24, prod: 0, qty: 1 }
                         ];
 
-                        uatActivities.forEach((act, idx) => {
-                            const rowNum = pData.length + 1;
+                        const uatStart = rowNum;
+                        uatActivities.forEach((act) => {
                             pData.push([
                                 act.name,
                                 act.desc,
@@ -436,26 +532,22 @@
                                 `=(C${rowNum}+D${rowNum})*E${rowNum}`,
                                 `=F${rowNum}/2`
                             ]);
+                            rowNum++;
                         });
 
-                        const uatTotalRow = pData.length + 1;
-                        pData.push([
-                            "Section Total",
-                            "",
-                            "",
-                            "",
-                            "",
-                            `=SUM(F${uatTotalRow-3}:F${uatTotalRow-1})`,
-                            `=SUM(G${uatTotalRow-3}:G${uatTotalRow-1})`
-                        ]);
+                        pData.push(["Section Total", "", "", "", "", `=SUM(F${uatStart}:F${rowNum-1})`, `=SUM(G${uatStart}:G${rowNum-1})`]);
+                        rowNum++;
                         pData.push([]);
+                        rowNum++;
                         sectionNum++;
                     }
 
-                    // 4. Migration Activities (First Product Only)
+                    // 4. MIGRATION ACTIVITIES (First Product Only)
                     if (isFirstChild) {
                         pData.push([`${sectionNum}. MIGRATION ACTIVITIES`]);
+                        rowNum++;
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
+                        rowNum++;
                         
                         const migrationActivities = [
                             { name: "Configure Setups and Deploy Personalization to another non-Prod environment as per customer environment selected", desc: "Configure Setups and Deploy Personalization to another non-Prod environment as per customer environment selected", nonProd: 0.1, prod: 0.1, qty: totalPersonalizationsAllProducts },
@@ -463,8 +555,8 @@
                             { name: "Assist Customer in Configuration of Setups and Deployment of Personalization to Prod environment (Optional)", desc: "Migration to production environment depending on customer's discussion. In this a migration documentation will be provided and assist customer in Moving to Redwood for Production", nonProd: 0, prod: 1, qty: 0 }
                         ];
 
-                        migrationActivities.forEach((act, idx) => {
-                            const rowNum = pData.length + 1;
+                        const migrationStart = rowNum;
+                        migrationActivities.forEach((act) => {
                             pData.push([
                                 act.name,
                                 act.desc,
@@ -474,26 +566,22 @@
                                 `=(C${rowNum}+D${rowNum})*E${rowNum}`,
                                 `=F${rowNum}/2`
                             ]);
+                            rowNum++;
                         });
 
-                        const migrationTotalRow = pData.length + 1;
-                        pData.push([
-                            "Section Total",
-                            "",
-                            "",
-                            "",
-                            "",
-                            `=SUM(F${migrationTotalRow-3}:F${migrationTotalRow-1})`,
-                            `=SUM(G${migrationTotalRow-3}:G${migrationTotalRow-1})`
-                        ]);
+                        pData.push(["Section Total", "", "", "", "", `=SUM(F${migrationStart}:F${rowNum-1})`, `=SUM(G${migrationStart}:G${rowNum-1})`]);
+                        rowNum++;
                         pData.push([]);
+                        rowNum++;
                         sectionNum++;
                     }
 
-                    // 5. Post-Go-Live Hypercare Support (First Product Only)
+                    // 5. HYPERCARE SUPPORT (First Product Only)
                     if (isFirstChild) {
                         pData.push([`${sectionNum}. POST-GO-LIVE HYPERCARE SUPPORT`]);
+                        rowNum++;
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
+                        rowNum++;
                         
                         const hypercareQty = Math.max(8, Math.floor(totalPersonalizationsAllProducts * 0.2));
                         
@@ -501,8 +589,8 @@
                             { name: "Post Go-live Support", desc: "Hypercare for 3 weeks to support all the requirement and issues", nonProd: 0, prod: 4, qty: hypercareQty }
                         ];
 
-                        hypercareActivities.forEach((act, idx) => {
-                            const rowNum = pData.length + 1;
+                        const hypercareStart = rowNum;
+                        hypercareActivities.forEach((act) => {
                             pData.push([
                                 act.name,
                                 act.desc,
@@ -512,44 +600,26 @@
                                 `=(C${rowNum}+D${rowNum})*E${rowNum}`,
                                 `=F${rowNum}/2`
                             ]);
+                            rowNum++;
                         });
 
-                        const hypercareTotalRow = pData.length + 1;
-                        pData.push([
-                            "Section Total",
-                            "",
-                            "",
-                            "",
-                            "",
-                            `=SUM(F${hypercareTotalRow-1}:F${hypercareTotalRow-1})`,
-                            `=SUM(G${hypercareTotalRow-1}:G${hypercareTotalRow-1})`
-                        ]);
+                        pData.push(["Section Total", "", "", "", "", `=SUM(F${hypercareStart}:F${rowNum-1})`, `=SUM(G${hypercareStart}:G${rowNum-1})`]);
+                        rowNum++;
                         pData.push([]);
+                        rowNum++;
                     }
 
-                    // Grand Total
-                    const grandTotalRow = pData.length + 1;
-                    pData.push([
-                        "GRAND TOTAL",
-                        "",
-                        "",
-                        "",
-                        "",
-                        `=SUM(F2:F${grandTotalRow-1})`,
-                        `=SUM(G2:G${grandTotalRow-1})`
-                    ]);
+                    // GRAND TOTAL
+                    pData.push(["GRAND TOTAL", "", "", "", "", `=SUM(F2:F${rowNum-1})`, `=SUM(G2:G${rowNum-1})`]);
 
                     const wsProduct = XLSX.utils.aoa_to_sheet(pData);
-                    
-                    // Set column widths
                     wsProduct['!cols'] = [
-                        { wch: 35 }, { wch: 60 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 15 }, { wch: 12 }
+                        { wch: 35 }, { wch: 70 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 15 }, { wch: 12 }
                     ];
 
                     XLSX.utils.book_append_sheet(wb, wsProduct, product.name);
                 });
 
-                // Save file
                 XLSX.writeFile(wb, "Redwood_Adoption_Estimator.xlsx");
             }
         }
@@ -558,3 +628,4 @@
 
 </body>
 </html>
+```
