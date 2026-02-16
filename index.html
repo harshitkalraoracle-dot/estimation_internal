@@ -10,8 +10,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- SheetJS for Excel Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- SheetJS with styling support -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
@@ -245,6 +245,83 @@
         { name: "Supply Planning", count: 57, product: "Supply Chain Planning" }
     ];
 
+    // Style definitions
+    const styles = {
+        headerBlue: {
+            fill: { fgColor: { rgb: "9BC2E6" } },
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+            alignment: { horizontal: "center", vertical: "center" },
+            border: {
+                top: { style: "thin", color: { rgb: "BDBDBD" } },
+                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
+                left: { style: "thin", color: { rgb: "BDBDBD" } },
+                right: { style: "thin", color: { rgb: "BDBDBD" } }
+            }
+        },
+        sectionGray: {
+            fill: { fgColor: { rgb: "A5A5A5" } },
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+            alignment: { horizontal: "center", vertical: "center" },
+            border: {
+                top: { style: "thin", color: { rgb: "BDBDBD" } },
+                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
+                left: { style: "thin", color: { rgb: "BDBDBD" } },
+                right: { style: "thin", color: { rgb: "BDBDBD" } }
+            }
+        },
+        totalGreen: {
+            fill: { fgColor: { rgb: "C6E0B4" } },
+            font: { bold: true, color: { rgb: "000000" }, sz: 11 },
+            alignment: { horizontal: "center", vertical: "center" },
+            border: {
+                top: { style: "thin", color: { rgb: "BDBDBD" } },
+                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
+                left: { style: "thin", color: { rgb: "BDBDBD" } },
+                right: { style: "thin", color: { rgb: "BDBDBD" } }
+            }
+        },
+        grandTotalDark: {
+            fill: { fgColor: { rgb: "595959" } },
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 12 },
+            alignment: { horizontal: "center", vertical: "center" },
+            border: {
+                top: { style: "thin", color: { rgb: "BDBDBD" } },
+                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
+                left: { style: "thin", color: { rgb: "BDBDBD" } },
+                right: { style: "thin", color: { rgb: "BDBDBD" } }
+            }
+        },
+        subtotalLight: {
+            fill: { fgColor: { rgb: "E7E6E6" } },
+            font: { bold: true, color: { rgb: "000000" } },
+            alignment: { horizontal: "right", vertical: "center" },
+            border: {
+                top: { style: "thin", color: { rgb: "BDBDBD" } },
+                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
+                left: { style: "thin", color: { rgb: "BDBDBD" } },
+                right: { style: "thin", color: { rgb: "BDBDBD" } }
+            }
+        },
+        regular: {
+            alignment: { horizontal: "left", vertical: "center" },
+            border: {
+                top: { style: "thin", color: { rgb: "BDBDBD" } },
+                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
+                left: { style: "thin", color: { rgb: "BDBDBD" } },
+                right: { style: "thin", color: { rgb: "BDBDBD" } }
+            }
+        },
+        center: {
+            alignment: { horizontal: "center", vertical: "center" },
+            border: {
+                top: { style: "thin", color: { rgb: "BDBDBD" } },
+                bottom: { style: "thin", color: { rgb: "BDBDBD" } },
+                left: { style: "thin", color: { rgb: "BDBDBD" } },
+                right: { style: "thin", color: { rgb: "BDBDBD" } }
+            }
+        }
+    };
+
     createApp({
         data() {
             return {
@@ -301,7 +378,6 @@
                 return product.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
             },
             onProductChange(index) {
-                // Clear modules when product changes
                 this.products[index].modules = [];
             },
             addProduct() {
@@ -328,6 +404,15 @@
                 this.products[pIndex].modules.splice(mIndex, 1);
             },
             
+            applyStyle(ws, range, style) {
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const addr = XLSX.utils.encode_cell({r: R, c: C});
+                        if (ws[addr]) ws[addr].s = style;
+                    }
+                }
+            },
+            
             generateExcel() {
                 const wb = XLSX.utils.book_new();
                 const totalPersonalizationsAllProducts = this.grandTotals.personalizations;
@@ -340,8 +425,9 @@
                 
                 let grandTotalFeatures = 0;
                 let grandTotalPers = 0;
+                let summaryStartRow = 1;
 
-                this.products.forEach((product) => {
+                this.products.forEach((product, pIdx) => {
                     const pFeatures = product.modules.reduce((sum, m) => sum + (m.features || 0), 0);
                     const pPers = product.modules.reduce((sum, m) => sum + (m.personalizations || 0), 0);
                     const weight = this.getProductWeight(product.name);
@@ -387,29 +473,37 @@
                 ]);
 
                 const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-                wsSummary['!cols'] = [
-                    { wch: 25 }, { wch: 35 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 12 }
-                ];
-
+                
                 // Apply styles to summary
                 const range = XLSX.utils.decode_range(wsSummary['!ref']);
                 
-                // Header row style (blue)
-                for (let C = range.s.c; C <= range.e.c; ++C) {
-                    const addr = XLSX.utils.encode_cell({r: 0, c: C});
-                    if (!wsSummary[addr]) continue;
-                    wsSummary[addr].s = {
-                        fill: { fgColor: { rgb: "9BC2E6" } },
-                        font: { bold: true, color: { rgb: "FFFFFF" } },
-                        alignment: { horizontal: "center", vertical: "center" },
-                        border: {
-                            top: { style: "thin", color: { rgb: "000000" } },
-                            bottom: { style: "thin", color: { rgb: "000000" } },
-                            left: { style: "thin", color: { rgb: "000000" } },
-                            right: { style: "thin", color: { rgb: "000000" } }
+                // Header row - Blue
+                this.applyStyle(wsSummary, {s: {r: 0, c: 0}, e: {r: 0, c: 6}}, styles.headerBlue);
+                
+                // Product total rows - Green
+                let rowIdx = 1;
+                this.products.forEach((product) => {
+                    rowIdx += product.modules.length;
+                    this.applyStyle(wsSummary, {s: {r: rowIdx, c: 0}, e: {r: rowIdx, c: 6}}, styles.totalGreen);
+                    rowIdx++;
+                });
+                
+                // Grand total - Dark gray
+                this.applyStyle(wsSummary, {s: {r: rowIdx, c: 0}, e: {r: rowIdx, c: 6}}, styles.grandTotalDark);
+                
+                // Apply regular borders to all cells
+                for (let R = 0; R <= range.e.r; ++R) {
+                    for (let C = 0; C <= range.e.c; ++C) {
+                        const addr = XLSX.utils.encode_cell({r: R, c: C});
+                        if (wsSummary[addr] && !wsSummary[addr].s) {
+                            wsSummary[addr].s = styles.regular;
                         }
-                    };
+                    }
                 }
+                
+                wsSummary['!cols'] = [
+                    { wch: 25 }, { wch: 35 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 12 }
+                ];
 
                 XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
 
@@ -421,7 +515,7 @@
                     const weight = this.getProductWeight(product.name);
 
                     const pData = [];
-                    let rowNum = 1;
+                    let rowNum = 0;
 
                     // Title
                     pData.push([`REDWOOD ADOPTION ESTIMATION - ${product.name.toUpperCase()}`]);
@@ -438,9 +532,11 @@
                     rowNum++;
 
                     let sectionNum = 1;
+                    let sectionStartRow = 0;
 
                     // 1. ASSESSMENT ACTIVITIES (First Product Only)
                     if (isFirstChild) {
+                        sectionStartRow = rowNum;
                         pData.push(["1. ASSESSMENT ACTIVITIES"]);
                         rowNum++;
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
@@ -452,7 +548,7 @@
                             { name: "Demo/Review", desc: "Walk Through of Applicable Feature Before and After Adoption along with few transactions in the system", nonProd: 8, prod: 0, qty: 1 }
                         ];
 
-                        const assessmentStart = rowNum;
+                        const assessmentDataRowStart = rowNum;
                         assessmentActivities.forEach((act) => {
                             pData.push([
                                 act.name,
@@ -460,14 +556,14 @@
                                 act.nonProd,
                                 act.prod,
                                 act.qty,
-                                `=(C${rowNum}+D${rowNum})*E${rowNum}`,
-                                `=F${rowNum}/2`
+                                `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
+                                `=F${rowNum + 1}/2`
                             ]);
                             rowNum++;
                         });
 
                         // Section Total
-                        pData.push(["Section Total", "", "", "", "", `=SUM(F${assessmentStart}:F${rowNum-1})`, `=SUM(G${assessmentStart}:G${rowNum-1})`]);
+                        pData.push(["Section Total", "", "", "", "", `=SUM(F${assessmentDataRowStart + 1}:F${rowNum})`, `=SUM(G${assessmentDataRowStart + 1}:G${rowNum})`]);
                         rowNum++;
                         pData.push([]);
                         rowNum++;
@@ -475,6 +571,7 @@
                     }
 
                     // 2. ADOPTION ACTIVITIES
+                    sectionStartRow = rowNum;
                     pData.push([`${sectionNum}. ADOPTION ACTIVITIES - ${product.name.toUpperCase()}`]);
                     rowNum++;
                     pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
@@ -488,7 +585,7 @@
                         { name: "Additional Personalization - Expected", desc: "Perform Additional personalization based on customer testing and inputs. This is again during testing", nonProd: 2, prod: 0, qty: Math.max(1, Math.floor(pPers * 0.1)) }
                     ];
 
-                    const adoptionStart = rowNum;
+                    const adoptionDataRowStart = rowNum;
                     adoptionActivities.forEach((act) => {
                         pData.push([
                             act.name,
@@ -496,13 +593,13 @@
                             act.nonProd,
                             act.prod,
                             act.qty,
-                            `=(C${rowNum}+D${rowNum})*E${rowNum}`,
-                            `=F${rowNum}/2`
+                            `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
+                            `=F${rowNum + 1}/2`
                         ]);
                         rowNum++;
                     });
 
-                    pData.push(["Section Total", "", "", "", "", `=SUM(F${adoptionStart}:F${rowNum-1})`, `=SUM(G${adoptionStart}:G${rowNum-1})`]);
+                    pData.push(["Section Total", "", "", "", "", `=SUM(F${adoptionDataRowStart + 1}:F${rowNum})`, `=SUM(G${adoptionDataRowStart + 1}:G${rowNum})`]);
                     rowNum++;
                     pData.push([]);
                     rowNum++;
@@ -510,6 +607,7 @@
 
                     // 3. UNIT TESTING (First Product Only)
                     if (isFirstChild) {
+                        sectionStartRow = rowNum;
                         pData.push([`${sectionNum}. UNIT TESTING ACTIVITIES AND UAT ASSISTANCE`]);
                         rowNum++;
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
@@ -521,7 +619,7 @@
                             { name: "Assist in Test instance and UAT to resolve any Redwood issues raised during Testing", desc: "Assist in Test instance and UAT to resolve any Redwood issues raised during Testing", nonProd: 24, prod: 0, qty: 1 }
                         ];
 
-                        const uatStart = rowNum;
+                        const uatDataRowStart = rowNum;
                         uatActivities.forEach((act) => {
                             pData.push([
                                 act.name,
@@ -529,13 +627,13 @@
                                 act.nonProd,
                                 act.prod,
                                 act.qty,
-                                `=(C${rowNum}+D${rowNum})*E${rowNum}`,
-                                `=F${rowNum}/2`
+                                `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
+                                `=F${rowNum + 1}/2`
                             ]);
                             rowNum++;
                         });
 
-                        pData.push(["Section Total", "", "", "", "", `=SUM(F${uatStart}:F${rowNum-1})`, `=SUM(G${uatStart}:G${rowNum-1})`]);
+                        pData.push(["Section Total", "", "", "", "", `=SUM(F${uatDataRowStart + 1}:F${rowNum})`, `=SUM(G${uatDataRowStart + 1}:G${rowNum})`]);
                         rowNum++;
                         pData.push([]);
                         rowNum++;
@@ -544,6 +642,7 @@
 
                     // 4. MIGRATION ACTIVITIES (First Product Only)
                     if (isFirstChild) {
+                        sectionStartRow = rowNum;
                         pData.push([`${sectionNum}. MIGRATION ACTIVITIES`]);
                         rowNum++;
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
@@ -555,7 +654,7 @@
                             { name: "Assist Customer in Configuration of Setups and Deployment of Personalization to Prod environment (Optional)", desc: "Migration to production environment depending on customer's discussion. In this a migration documentation will be provided and assist customer in Moving to Redwood for Production", nonProd: 0, prod: 1, qty: 0 }
                         ];
 
-                        const migrationStart = rowNum;
+                        const migrationDataRowStart = rowNum;
                         migrationActivities.forEach((act) => {
                             pData.push([
                                 act.name,
@@ -563,13 +662,13 @@
                                 act.nonProd,
                                 act.prod,
                                 act.qty,
-                                `=(C${rowNum}+D${rowNum})*E${rowNum}`,
-                                `=F${rowNum}/2`
+                                `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
+                                `=F${rowNum + 1}/2`
                             ]);
                             rowNum++;
                         });
 
-                        pData.push(["Section Total", "", "", "", "", `=SUM(F${migrationStart}:F${rowNum-1})`, `=SUM(G${migrationStart}:G${rowNum-1})`]);
+                        pData.push(["Section Total", "", "", "", "", `=SUM(F${migrationDataRowStart + 1}:F${rowNum})`, `=SUM(G${migrationDataRowStart + 1}:G${rowNum})`]);
                         rowNum++;
                         pData.push([]);
                         rowNum++;
@@ -578,6 +677,7 @@
 
                     // 5. HYPERCARE SUPPORT (First Product Only)
                     if (isFirstChild) {
+                        sectionStartRow = rowNum;
                         pData.push([`${sectionNum}. POST-GO-LIVE HYPERCARE SUPPORT`]);
                         rowNum++;
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
@@ -589,7 +689,7 @@
                             { name: "Post Go-live Support", desc: "Hypercare for 3 weeks to support all the requirement and issues", nonProd: 0, prod: 4, qty: hypercareQty }
                         ];
 
-                        const hypercareStart = rowNum;
+                        const hypercareDataRowStart = rowNum;
                         hypercareActivities.forEach((act) => {
                             pData.push([
                                 act.name,
@@ -597,22 +697,73 @@
                                 act.nonProd,
                                 act.prod,
                                 act.qty,
-                                `=(C${rowNum}+D${rowNum})*E${rowNum}`,
-                                `=F${rowNum}/2`
+                                `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
+                                `=F${rowNum + 1}/2`
                             ]);
                             rowNum++;
                         });
 
-                        pData.push(["Section Total", "", "", "", "", `=SUM(F${hypercareStart}:F${rowNum-1})`, `=SUM(G${hypercareStart}:G${rowNum-1})`]);
+                        pData.push(["Section Total", "", "", "", "", `=SUM(F${hypercareDataRowStart + 1}:F${rowNum})`, `=SUM(G${hypercareDataRowStart + 1}:G${rowNum})`]);
                         rowNum++;
                         pData.push([]);
                         rowNum++;
                     }
 
                     // GRAND TOTAL
-                    pData.push(["GRAND TOTAL", "", "", "", "", `=SUM(F2:F${rowNum-1})`, `=SUM(G2:G${rowNum-1})`]);
+                    pData.push(["GRAND TOTAL", "", "", "", "", `=SUM(F2:F${rowNum + 1})`, `=SUM(G2:G${rowNum + 1})`]);
 
                     const wsProduct = XLSX.utils.aoa_to_sheet(pData);
+                    
+                    // Apply styles
+                    const range = XLSX.utils.decode_range(wsProduct['!ref']);
+                    
+                    // Title - merge and style
+                    wsProduct['!merges'] = [{s: {r: 0, c: 0}, e: {r: 0, c: 6}}];
+                    wsProduct["A1"].s = {
+                        fill: { fgColor: { rgb: "9BC2E6" } },
+                        font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
+                        alignment: { horizontal: "center", vertical: "center" }
+                    };
+                    
+                    // Apply styles to all rows
+                    for (let R = 0; R <= range.e.r; ++R) {
+                        // Section headers (gray)
+                        if (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})] && 
+                            wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v && 
+                            (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v.toString().match(/^\d\./) || 
+                             wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v.toString().includes("REDWOOD"))) {
+                            if (!wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].s) {
+                                this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.sectionGray);
+                            }
+                        }
+                        
+                        // Table headers (blue)
+                        if (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})] && 
+                            wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v === "Activity") {
+                            this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.headerBlue);
+                        }
+                        
+                        // Section totals (light gray)
+                        if (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})] && 
+                            wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v === "Section Total") {
+                            this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.subtotalLight);
+                        }
+                        
+                        // Grand total (dark gray)
+                        if (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})] && 
+                            wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v === "GRAND TOTAL") {
+                            this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.grandTotalDark);
+                        }
+                        
+                        // Apply regular borders to remaining cells
+                        for (let C = 0; C <= range.e.c; ++C) {
+                            const addr = XLSX.utils.encode_cell({r: R, c: C});
+                            if (wsProduct[addr] && !wsProduct[addr].s) {
+                                wsProduct[addr].s = styles.regular;
+                            }
+                        }
+                    }
+                    
                     wsProduct['!cols'] = [
                         { wch: 35 }, { wch: 70 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 15 }, { wch: 12 }
                     ];
