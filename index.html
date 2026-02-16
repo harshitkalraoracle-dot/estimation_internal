@@ -3,1243 +3,765 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Redwood Adoption Estimator</title>
+<title>Redwood Adoption Estimator (Internal)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-/* Oracle Typography - System fonts matching Oracle's design */
+/* Simplified Internal Tool Styling */
 body {
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-background: #F5F7FA; /* Oracle light grey background */
-margin: 0;
-color: #252525; /* Oracle dark grey text */
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    color: #333;
 }
-:root {
-/* Strict Oracle Grey & White Palette */
---oracle-black: #000000; /* Pure black for header */
---oracle-dark-grey: #252525; /* Dark grey for text */
---oracle-medium-grey: #666666; /* Medium grey */
---oracle-light-grey: #BDBDBD; /* Light grey borders */
---oracle-very-light-grey: #E0E0E0; /* Very light grey */
---oracle-background-grey: #F5F7FA; /* Background grey */
---oracle-white: #FFFFFF; /* Pure white */
---oracle-selected-green: #E8F5E9; /* Very subtle green for selected */
---oracle-unselected-red: #FFEBEE; /* Very subtle red for unselected */
-/* Excel-like colors */
---excel-header-blue: #5B9BD5;
---excel-section-grey: #A5A5A5;
---excel-total-green: #C6EFCE;
---excel-grandtotal-green: #9CC2E5;
---excel-alt-row: #DDEBF7;
-}
-/* Header with Oracle Jet banner below it */
-.header {
-background: var(--oracle-black); /* Black upper strip */
-color: var(--oracle-white); /* White text */
-padding: 16px 20px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-position: relative;
-}
-.header h2 {
-margin: 0;
-font-weight: 600;
-letter-spacing: 0.5px;
-font-size: 20px;
-}
-/* Oracle Jet banner - using your image */
-.oracle-jet-banner {
-height: 8px;
-background: url('oracle-jet-banner.png') no-repeat center center;
-background-size: 100% 100%;
-width: 100%;
-}
-.user-badge {
-background: rgba(255, 255, 255, 0.15);
-padding: 6px 12px;
-border-radius: 20px;
-font-size: 14px;
-border: 1px solid rgba(255, 255, 255, 0.3);
-color: var(--oracle-white);
-}
+.hidden { display: none !important; }
+/* Login Screen */
 .login-container {
-max-width: 400px;
-margin: 100px auto;
-padding: 32px;
-background: var(--oracle-white);
-border-radius: 8px;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-border: 1px solid var(--oracle-light-grey);
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
 }
-.login-container h3 {
-margin-top: 0;
-color: var(--oracle-dark-grey);
-font-weight: 600;
-font-size: 20px;
-}
+.login-container h3 { margin-top: 0; }
 .login-container input {
-width: 100%;
-padding: 12px;
-margin: 8px 0;
-border: 1px solid var(--oracle-light-grey);
-border-radius: 4px;
-box-sizing: border-box;
-font-family: inherit;
-transition: border-color 0.2s;
-}
-.login-container input:focus {
-outline: none;
-border-color: var(--oracle-black);
-box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 .login-container button {
-width: 100%;
-padding: 12px;
-margin: 8px 0;
-border: 1px solid var(--oracle-dark-grey);
-border-radius: 4px;
-cursor: pointer;
-font-size: 16px;
-font-weight: 600;
-font-family: inherit;
-transition: all 0.2s;
-color: var(--oracle-white);
-background: var(--oracle-dark-grey);
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
 }
-.login-container button:hover {
-background: #1A1A1A;
-transform: translateY(-1px);
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-.btn-user {
-background: var(--oracle-dark-grey);
-color: var(--oracle-white);
-border: 1px solid var(--oracle-dark-grey);
-}
-.btn-admin {
-background: var(--oracle-white);
-color: var(--oracle-dark-grey);
-border: 1px solid var(--oracle-dark-grey);
-}
-.btn-admin:hover {
-background: var(--oracle-very-light-grey);
-}
+.btn-user { background: #0056b3; color: white; }
+.btn-admin { background: #fff; color: #333; border: 1px solid #333; }
 .btn-logout {
-background: var(--oracle-white);
-color: var(--oracle-dark-grey);
-padding: 8px 16px;
-border: 1px solid var(--oracle-dark-grey);
-border-radius: 4px;
-cursor: pointer;
-font-weight: 600;
-transition: all 0.2s;
+    background: #fff;
+    color: #333;
+    border: 1px solid #333;
+    padding: 5px 15px;
+    cursor: pointer;
+    font-weight: bold;
 }
-.btn-logout:hover {
-background: var(--oracle-very-light-grey);
+/* App Screen */
+.header {
+    background: #333;
+    color: #fff;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .dashboard {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-gap: 12px;
-padding: 16px;
-background: var(--oracle-white);
-border: 1px solid var(--oracle-light-grey);
-border-radius: 8px;
-margin: 16px;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+    flex-wrap: wrap;
 }
+.dashboard div { display: flex; flex-direction: column; }
 .dashboard input {
-width: 100%;
-padding: 8px;
-border: 1px solid var(--oracle-light-grey);
-border-radius: 4px;
-box-sizing: border-box;
-background: var(--oracle-background-grey);
-font-family: inherit;
-color: var(--oracle-dark-grey);
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #eee;
 }
 .tabs {
-display: flex;
-background: var(--oracle-white);
-padding: 0 20px;
-border-bottom: 2px solid var(--oracle-light-grey);
-flex-wrap: wrap;
-margin: 0 16px;
+    display: flex;
+    background: #fff;
+    padding: 0 20px;
+    border-bottom: 2px solid #ccc;
 }
 .tab {
-padding: 12px 20px;
-cursor: pointer;
-font-weight: 600;
-user-select: none;
-color: var(--oracle-medium-grey);
-border-bottom: 2px solid transparent;
-transition: all 0.2s;
-font-size: 15px;
-}
-.tab:hover {
-color: var(--oracle-dark-grey);
-background: var(--oracle-very-light-grey);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
 }
 .tab.active {
-color: var(--oracle-black);
-border-bottom: 3px solid var(--oracle-black);
-background: var(--oracle-very-light-grey);
+    border-bottom: 3px solid #0056b3;
+    color: #0056b3;
 }
-.tab-content {
-display: none;
-padding: 20px;
-margin: 0 16px;
-}
-.tab-content.active {
-display: block;
-}
-/* Product section headers - black background with white text */
-.product-header {
-padding: 12px 16px;
-font-weight: 600;
-background: var(--oracle-black);
-color: var(--oracle-white);
-border-bottom: 1px solid var(--oracle-light-grey);
-letter-spacing: 0.3px;
-font-size: 15px;
-}
-/* Regular section headers - Excel-like grey */
-.section-header {
-padding: 12px 16px;
-font-weight: 600;
-background: var(--excel-section-grey);
-color: var(--oracle-white);
-border-bottom: 1px solid var(--oracle-light-grey);
-letter-spacing: 0.3px;
-font-size: 15px;
-}
+.tab-content { display: none; padding: 20px; }
+.tab-content.active { display: block; }
+/* Sections & Tables */
 .section {
-margin-bottom: 24px;
-border-radius: 8px;
-overflow: hidden;
-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-background: var(--oracle-white);
-border: 1px solid var(--oracle-light-grey);
+    background: #fff;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    overflow: hidden;
 }
-table {
-width: 100%;
-border-collapse: collapse;
+.section-header {
+    background: #a5a5a5;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: bold;
 }
+.product-header {
+    background: #333;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: bold;
+}
+table { width: 100%; border-collapse: collapse; }
 th, td {
-padding: 10px 8px;
-border: 1px solid var(--oracle-light-grey);
-text-align: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 14px;
 }
-th {
-background: var(--excel-header-blue);
-font-weight: 600;
-color: var(--oracle-white);
-text-transform: uppercase;
-font-size: 12px;
-letter-spacing: 0.5px;
-}
-td.task-name {
-text-align: left;
-font-weight: 500;
-color: var(--oracle-dark-grey);
-}
-td.task-details {
-text-align: left;
-font-size: 13px;
-color: var(--oracle-medium-grey);
-}
+th { background: #f9f9f9; font-weight: bold; }
+td.task-name { text-align: left; }
+td.task-details { text-align: left; font-size: 13px; color: #666; }
 input[type="number"] {
-width: 80px;
-padding: 6px;
-text-align: center;
-border: 1px solid var(--oracle-light-grey);
-border-radius: 4px;
-font-family: inherit;
-transition: border-color 0.2s;
-color: var(--oracle-dark-grey);
+    width: 60px;
+    padding: 4px;
+    text-align: center;
+    border: 1px solid #ccc;
 }
-input[type="number"]:focus {
-outline: none;
-border-color: var(--oracle-black);
+tr.section-total { background: #c6efce; font-weight: bold; }
+tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
+.btn-download {
+    background: #0056b3;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 10px;
 }
-button.download {
-margin: 24px auto;
-display: block;
-padding: 12px 28px;
-background: var(--oracle-white);
-color: var(--oracle-dark-grey);
-border: 1px solid var(--oracle-dark-grey);
-border-radius: 4px;
-font-size: 16px;
-cursor: pointer;
-font-weight: 600;
-font-family: inherit;
-transition: all 0.2s;
-}
-button.download:hover {
-background: var(--oracle-very-light-grey);
-transform: translateY(-2px);
-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-.admin-controls {
-background: var(--oracle-background-grey);
-padding: 20px;
-margin-bottom: 20px;
-border-radius: 8px;
-border: 2px solid var(--oracle-light-grey);
-}
-.admin-controls h3 {
-margin-top: 0;
-color: var(--oracle-dark-grey);
-font-weight: 600;
-}
-.file-input-wrapper {
-margin: 16px 0;
-}
-.file-input-wrapper input[type="file"] {
-padding: 8px;
-border: 1px solid var(--oracle-light-grey);
-border-radius: 4px;
-width: 100%;
-box-sizing: border-box;
-font-family: inherit;
-}
-.btn-upload {
-background: var(--oracle-white);
-color: var(--oracle-dark-grey);
-padding: 10px 20px;
-border: 1px solid var(--oracle-dark-grey);
-border-radius: 4px;
-cursor: pointer;
-font-weight: 600;
-margin-top: 10px;
-font-family: inherit;
-transition: all 0.2s;
-}
-.btn-upload:hover {
-background: var(--oracle-very-light-grey);
-}
+.btn-download:hover { background: #004494; }
 .module-toggle-btn {
-padding: 6px 16px;
-border: 1px solid var(--oracle-light-grey);
-border-radius: 20px;
-cursor: pointer;
-font-weight: 600;
-transition: all 0.2s;
-font-size: 14px;
-font-family: inherit;
-color: var(--oracle-dark-grey);
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    background: #fff;
 }
-.module-toggle-btn.selected {
-background: var(--oracle-selected-green);
-color: var(--oracle-dark-grey);
-border: 1px solid var(--oracle-light-grey);
-font-weight: 700;
-}
-.module-toggle-btn.unselected {
-background: var(--oracle-unselected-red);
-color: var(--oracle-dark-grey);
-border: 1px solid var(--oracle-light-grey);
-font-weight: 700;
-}
-.hidden {
-display: none;
-}
-.error-message {
-color: var(--oracle-dark-grey);
-font-size: 14px;
-margin: 10px 0;
-text-align: center;
-background: var(--oracle-background-grey);
-padding: 8px;
-border-radius: 4px;
-border-left: 3px solid var(--oracle-medium-grey);
-font-weight: 500;
-}
-tr.section-total {
-background: var(--excel-total-green);
-font-weight: 600;
-color: var(--oracle-dark-grey);
-}
-tr.grand-total {
-background: var(--excel-grandtotal-green);
-font-weight: 700;
-color: var(--oracle-dark-grey);
-font-size: 16px;
-}
-/* Alternating row colors */
-tbody tr:nth-child(even) {
-background-color: var(--excel-alt-row);
-}
-/* Additional Oracle styling improvements */
-label {
-font-weight: 500;
-color: var(--oracle-dark-grey);
-display: block;
-margin-bottom: 4px;
-font-size: 14px;
-}
-input, select, textarea, button {
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-/* Focus states for accessibility */
-button:focus, input:focus, .tab:focus {
-outline: 2px solid var(--oracle-black);
-outline-offset: 2px;
-}
-/* Hover effects for better UX */
-.module-toggle-btn:hover {
-transform: scale(1.05);
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-border-color: var(--oracle-dark-grey);
-}
-/* Responsive improvements */
-@media (max-width: 768px) {
-.dashboard {
-grid-template-columns: 1fr;
-}
-.tabs {
-flex-direction: column;
-align-items: flex-start;
-}
-.tab {
-width: 100%;
-border-radius: 4px;
-margin-bottom: 4px;
-}
-}
-/* Subtle icons with grey */
-.download-icon {
-color: var(--oracle-medium-grey);
-margin-right: 8px;
-}
+.module-toggle-btn.selected { background: #e8f5e9; border-color: #2e7d32; color: #2e7d32; font-weight: bold; }
+.module-toggle-btn.unselected { background: #ffebee; border-color: #c62828; color: #c62828; font-weight: bold; }
+.admin-controls { background: #f9f9f9; padding: 15px; border: 1px solid #ccc; margin-bottom: 20px; }
 </style>
 </head>
 <body>
-<!-- Rest of the HTML remains the same -->
+
+<!-- Login Screen -->
 <div id="loginScreen" class="login-container">
-<h3>Redwood Adoption Estimator</h3>
-<p>Choose your access level:</p>
-<button class="btn-user" onclick="loginAsUser()">Continue as User</button>
-<button class="btn-admin" onclick="showAdminLogin()">Admin Login</button>
-<div id="adminLoginForm" class="hidden" style="margin-top:20px;">
-<input type="password" id="adminPassword" placeholder="Enter admin password" onkeypress="if(event.key==='Enter')loginAsAdmin()">
-<button class="btn-admin" onclick="loginAsAdmin()">Login as Admin</button>
-<div id="loginError" class="error-message hidden">Incorrect password. Please try again.</div>
+    <h3>Redwood Adoption Estimator</h3>
+    <p>Internal Tool - Select Access Level</p>
+    <button class="btn-user" onclick="loginAsUser()">Continue as User</button>
+    <button class="btn-admin" onclick="showAdminLogin()">Admin Login</button>
+    <div id="adminLoginForm" class="hidden" style="margin-top:20px;">
+        <input type="password" id="adminPassword" placeholder="Enter admin password">
+        <button class="btn-admin" onclick="loginAsAdmin()">Login</button>
+        <div id="loginError" class="hidden" style="color:red; margin-top:5px;">Incorrect password</div>
+    </div>
 </div>
-</div>
+
+<!-- App Screen -->
 <div id="appScreen" class="hidden">
-<div class="header">
-<h2>Redwood Adoption Estimator</h2>
-<div style="display:flex;gap:12px;align-items:center;">
-<span class="user-badge" id="userBadge"></span>
-<button class="btn-logout" onclick="logout()">Logout</button>
+    <div class="header">
+        <h2>Redwood Adoption Estimator</h2>
+        <div>
+            <span id="userBadge" style="margin-right:10px; font-weight:bold;"></span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    
+    <div class="dashboard">
+        <div>
+            <label>Customer Name</label>
+            <input id="customerName" value="Internal Customer"/>
+        </div>
+        <div>
+            <label>Modules Selected</label>
+            <input id="moduleCount" readonly/>
+        </div>
+        <div>
+            <label>Products Selected</label>
+            <input id="productCount" readonly/>
+        </div>
+    </div>
+
+    <div class="tabs" id="tabsContainer"></div>
+
+    <div id="selector" class="tab-content">
+        <div id="productContainer"></div>
+    </div>
+
+    <div id="estimation" class="tab-content">
+        <div id="formContainer"></div>
+        <div style="text-align:center; margin:20px 0;">
+            <button class="btn-download" onclick="downloadEstimation()">Download Excel Report</button>
+            <button class="btn-download" onclick="downloadJSON()">Download JSON</button>
+        </div>
+    </div>
+
+    <div id="admin" class="tab-content">
+        <div class="admin-controls">
+            <h3>Configuration</h3>
+            <div class="file-input-wrapper">
+                <input type="file" id="jsonFile" accept=".json">
+                <button class="btn-download" onclick="uploadJSON()" style="background:#333; margin-left:10px;">Upload JSON</button>
+            </div>
+        </div>
+        <div id="adminContainer"></div>
+    </div>
 </div>
-</div>
-<!-- Oracle Jet banner below the header -->
-<div class="oracle-jet-banner"></div>
-<div class="dashboard">
-<div>
-<label>Customer Name</label>
-<input id="customerName" value="Global Enterprises"/>
-</div>
-<div>
-<label>Modules Selected</label>
-<input id="moduleCount" readonly/>
-</div>
-<div>
-<label>Products Selected</label>
-<input id="productCount" readonly/>
-</div>
-</div>
-<div class="tabs" id="tabsContainer"></div>
-<div id="selector" class="tab-content">
-<div id="productContainer"></div>
-</div>
-<div id="estimation" class="tab-content">
-<div id="formContainer"></div>
-<div style="text-align:center;margin:24px 0;">
-<button class="download" onclick="downloadEstimation()" style="display:inline-block;margin:0 10px;">Download Excel Report</button>
-<button class="download" onclick="downloadJSON()" style="display:inline-block;margin:0 10px;">Download JSON</button>
-</div>
-</div>
-<div id="admin" class="tab-content">
-<div class="admin-controls">
-<h3>Configuration Management</h3>
-<div style="margin:20px 0;padding:15px;background:var(--oracle-white);border-radius:8px;border:1px solid var(--oracle-light-grey);">
-<h4 style="margin-top:0;color:var(--oracle-dark-grey);">JSON Configuration</h4>
-<p><strong>Upload JSON Configuration:</strong> Upload a JSON file to restore complete application state including selected modules, personalizations, and all configuration values.</p>
-<div class="file-input-wrapper">
-<input type="file" id="jsonFile" accept=".json">
-<button class="btn-upload" onclick="uploadJSON()">Upload JSON & Apply</button>
-</div>
-<button class="download" onclick="downloadJSON()" style="display:inline-block;margin:10px 0;">Download Current Config as JSON</button>
-</div>
-</div>
-<h3>Current Configuration (Editable)</h3>
-<div id="adminContainer"></div>
-<button class="download" onclick="downloadEstimation()">Download Excel Report</button>
-</div>
-</div>
-<!-- Rest of the script remains the same -->
+
 <script>
-const ADMIN_PASSWORD = "admin123";
+// --- Configuration & Data ---
+const ADMIN_PASSWORD = "admin";
 let currentUser = null;
 let personalizationCounts = {};
 let selectedModules = new Set();
 
-// Updated Products List based on Input Data
+// SPECIFIC DATA FROM USER INPUT (Turn 1)
 const PRODUCTS = [
   { name: "Procurement", weight: 1.0 },
-  { name: "Order Management", weight: 1.0 },
-  { name: "Product Hub", weight: 1.0 }
+  { name: "Order Management", weight: 1.0 }
 ];
 
-// Updated Modules List based on Input Data
 const MODULES = [
   { name: "Purchasing", count: 30, product: "Procurement" },
   { name: "Procurement Contracts", count: 3, product: "Procurement" },
   { name: "Self Service Procurement", count: 0, product: "Procurement" },
   { name: "Sourcing", count: 0, product: "Procurement" },
   { name: "Order Management", count: 15, product: "Order Management" },
-  { name: "Pricing", count: 4, product: "Order Management" },
-  { name: "Product Model", count: 0, product: "Product Hub" }
+  { name: "Pricing", count: 4, product: "Order Management" }
 ];
 
-// Pre-calculated Personalizations based on Input File (Only for modules with features)
+// Pre-calculated Personalizations (Turn 1 Input)
 const INPUT_PERSONALIZATIONS = {
   "Procurement": { "Purchasing": 20, "Procurement Contracts": 0, "Self Service Procurement": 0, "Sourcing": 0 },
-  "Order Management": { "Order Management": 22, "Pricing": 0 },
-  "Product Hub": { "Product Model": 0 }
+  "Order Management": { "Order Management": 22, "Pricing": 0 }
 };
 
+// Default Tasks (Service Kick-off = 0 Effort as per Turn 1)
 const DEFAULT_OVERVIEW = [
-  { name:"Service Kick-off", detail:"Validate the filled-in Redwood Pre-Adoption File and the Helper Tool output Extract", nonProd:0, prod:0, qty:1 },
-  { name:"Service Kick-off", detail:"Perform Impact Assessment for Redwood and Customer's Personalization", nonProd:0, prod:0, qty:1 },
-  { name:"Discussion", detail:"Introduction of Redwood Features along with redwood roadmap of Supply Chain. Prepare Inventory of assets impacted , Report and the Workplan and Review Workplan with the Customer", nonProd:8, prod:0, qty:1 },
-  { name:"Documentation", detail:"This covers varous documentation like CWB's and Adoption Document", nonProd:16, prod:0, qty:1 },
-  { name:"Demo / Review", detail:"Walk Through of Applicable Feature Before and After Adoption along with few transactions in the system.", nonProd:8, prod:0, qty:1 }
+  { name:"Service Kick-off", detail:"Validate Pre-Adoption File", nonProd:0, prod:0, qty:1 },
+  { name:"Service Kick-off", detail:"Impact Assessment", nonProd:0, prod:0, qty:1 },
+  { name:"Discussion", detail:"Redwood Roadmap & Workplan", nonProd:8, prod:0, qty:1 },
+  { name:"Documentation", detail:"CWBs and Adoption Document", nonProd:16, prod:0, qty:1 },
+  { name:"Demo / Review", detail:"Walk Through of Features", nonProd:8, prod:0, qty:1 }
 ];
 
 const DEFAULT_HYPERCARE = [
   { name:"Production Migration", detail:"Per personalization time / Env", nonProd:0, prod:0.5, qty:0 },
-  { name:"Issue Resolution", detail:"This can Vary with reported issue / Env", nonProd:0, prod:4, qty:0 }
+  { name:"Issue Resolution", detail:"Hypercare Support", nonProd:0, prod:4, qty:0 }
 ];
 
 let CONFIG = {
-overview: JSON.parse(JSON.stringify(DEFAULT_OVERVIEW)),
-products: {},
-hypercare: JSON.parse(JSON.stringify(DEFAULT_HYPERCARE))
+    overview: JSON.parse(JSON.stringify(DEFAULT_OVERVIEW)),
+    products: {},
+    hypercare: JSON.parse(JSON.stringify(DEFAULT_HYPERCARE))
+};
+
+// --- Initialization ---
+window.onload = function() {
+    // Ensure DOM is ready before binding
+    console.log("App Loaded");
 };
 
 function showAdminLogin() {
-document.getElementById('adminLoginForm').classList.remove('hidden');
+    document.getElementById('adminLoginForm').classList.remove('hidden');
 }
+
 function loginAsUser() {
-currentUser = 'user';
-initializeApp();
+    currentUser = 'user';
+    initializeApp();
 }
+
 function loginAsAdmin() {
-const pwd = document.getElementById('adminPassword').value;
-const errorDiv = document.getElementById('loginError');
-if (pwd === ADMIN_PASSWORD) {
-currentUser = 'admin';
-errorDiv.classList.add('hidden');
-initializeApp();
-} else {
-errorDiv.classList.remove('hidden');
+    const pwd = document.getElementById('adminPassword').value;
+    const errorDiv = document.getElementById('loginError');
+    if (pwd === ADMIN_PASSWORD) {
+        currentUser = 'admin';
+        errorDiv.classList.add('hidden');
+        initializeApp();
+    } else {
+        errorDiv.classList.remove('hidden');
+    }
 }
-}
+
 function logout() {
-currentUser = null;
-document.getElementById('loginScreen').classList.remove('hidden');
-document.getElementById('appScreen').classList.add('hidden');
-document.getElementById('adminPassword').value = '';
-document.getElementById('adminLoginForm').classList.add('hidden');
-document.getElementById('loginError').classList.add('hidden');
+    currentUser = null;
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('appScreen').classList.add('hidden');
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('adminLoginForm').classList.add('hidden');
 }
+
 function initializeApp() {
-document.getElementById('loginScreen').classList.add('hidden');
-document.getElementById('appScreen').classList.remove('hidden');
-if (currentUser === 'admin') {
-document.getElementById('userBadge').textContent = 'Admin';
-renderTabs(['selector', 'estimation', 'admin']);
-} else {
-document.getElementById('userBadge').textContent = 'User';
-renderTabs(['selector', 'estimation']);
-}
-// Set up event delegation for editable fields (only once)
-if (!window.editableFieldsListenerAttached) {
-document.addEventListener('input', function(e) {
-if (e.target.classList.contains('editable-field')) {
-const sectionKey = e.target.getAttribute('data-section');
-const index = parseInt(e.target.getAttribute('data-index'));
-const field = e.target.getAttribute('data-field');
-const value = e.target.value;
-updateTask(sectionKey, index, field, value);
-}
-});
-window.editableFieldsListenerAttached = true;
-}
+    // Fix: Ensure elements exist before manipulating classes
+    const loginScreen = document.getElementById('loginScreen');
+    const appScreen = document.getElementById('appScreen');
+    
+    if(loginScreen) loginScreen.classList.add('hidden');
+    if(appScreen) appScreen.classList.remove('hidden');
 
-// Pre-select modules based on input data
-MODULES.forEach(m => {
-    if(m.count > 0) {
-        selectedModules.add(m.name);
-        // Set personalization count based on input file
-        if(INPUT_PERSONALIZATIONS[m.product] && INPUT_PERSONALIZATIONS[m.product][m.name] !== undefined) {
-            personalizationCounts[m.product] = INPUT_PERSONALIZATIONS[m.product][m.name];
-        } else {
-            personalizationCounts[m.product] = 0;
-        }
+    if (currentUser === 'admin') {
+        document.getElementById('userBadge').textContent = 'Admin';
+        renderTabs(['selector', 'estimation', 'admin']);
+    } else {
+        document.getElementById('userBadge').textContent = 'User';
+        renderTabs(['selector', 'estimation']);
     }
-});
 
-renderSelector();
-rebuildProductConfig();
-renderEstimation();
-activateTab('estimation'); // Default to estimation
+    // Pre-select modules based on input data (Turn 1)
+    MODULES.forEach(m => {
+        if(m.count > 0) {
+            selectedModules.add(m.name);
+            if(INPUT_PERSONALIZATIONS[m.product] && INPUT_PERSONALIZATIONS[m.product][m.name] !== undefined) {
+                personalizationCounts[m.product] = INPUT_PERSONALIZATIONS[m.product][m.name];
+            } else {
+                personalizationCounts[m.product] = 0;
+            }
+        }
+    });
+
+    renderSelector();
+    rebuildProductConfig();
+    renderEstimation();
+    activateTab('estimation');
 }
+
 function renderTabs(tabs) {
-const container = document.getElementById('tabsContainer');
-container.innerHTML = '';
-const tabLabels = {
-selector: '1. Module Selection',
-estimation: '2. Estimation Report',
-admin: '3. Admin Configuration'
-};
-tabs.forEach(tabId => {
-const tab = document.createElement('div');
-tab.className = 'tab';
-tab.textContent = tabLabels[tabId];
-tab.onclick = () => activateTab(tabId);
-container.appendChild(tab);
-});
+    const container = document.getElementById('tabsContainer');
+    container.innerHTML = '';
+    const tabLabels = { selector: '1. Module Selection', estimation: '2. Estimation Report', admin: '3. Admin' };
+    tabs.forEach(tabId => {
+        const tab = document.createElement('div');
+        tab.className = 'tab';
+        tab.textContent = tabLabels[tabId];
+        tab.onclick = () => activateTab(tabId);
+        container.appendChild(tab);
+    });
 }
+
 function activateTab(id){
-document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-const tabs = Array.from(document.querySelectorAll('.tab'));
-const idx = tabs.findIndex(t => t.textContent.includes(id === 'selector' ? 'Module' : id === 'estimation' ? 'Estimation' : 'Admin'));
-if(idx >= 0) tabs[idx].classList.add('active');
-document.getElementById(id).classList.add('active');
-if (id === 'admin' && currentUser === 'admin') {
-renderAdmin();
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const idx = tabs.findIndex(t => t.textContent.includes(id === 'selector' ? 'Module' : id === 'estimation' ? 'Estimation' : 'Admin'));
+    if(idx >= 0) tabs[idx].classList.add('active');
+    document.getElementById(id).classList.add('active');
+    if (id === 'admin' && currentUser === 'admin') renderAdmin();
 }
+
+function renderSection(parent, title, tasks, editable){
+    if(tasks.length === 0) return;
+    const sec = document.createElement("div");
+    sec.className = "section";
+    const headerClass = title.includes("Product") ? "product-header" : "section-header";
+    sec.innerHTML = `<div class="${headerClass}">${title}</div>`;
+    
+    let rows = "";
+    let sectionTotal = 0;
+    let sectionCSU = 0;
+    
+    tasks.forEach((t, i) => {
+        const total = (t.nonProd + t.prod) * t.qty;
+        const csu = total / 2;
+        sectionTotal += total;
+        sectionCSU += csu;
+        const sectionKey = title.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        rows += `<tr>
+            <td class="task-name">${t.name}</td>
+            <td class="task-details">${t.detail}</td>
+            <td>${editable ? `<input type="number" step="0.1" value="${t.nonProd}" data-section="${sectionKey}" data-index="${i}" data-field="nonProd" class="editable-field">` : t.nonProd.toFixed(1)}</td>
+            <td>${editable ? `<input type="number" step="0.1" value="${t.prod}" data-section="${sectionKey}" data-index="${i}" data-field="prod" class="editable-field">` : t.prod.toFixed(1)}</td>
+            <td>${editable ? `<input type="number" value="${t.qty}" data-section="${sectionKey}" data-index="${i}" data-field="qty" class="editable-field">` : t.qty}</td>
+            <td>${total.toFixed(1)}</td>
+            <td>${csu.toFixed(1)}</td>
+        </tr>`;
+    });
+    
+    rows += `<tr class="section-total">
+        <td colspan="5" style="text-align:right;">Section Total:</td>
+        <td>${sectionTotal.toFixed(1)}</td>
+        <td>${sectionCSU.toFixed(1)}</td>
+    </tr>`;
+    
+    sec.innerHTML += `<table>
+        <thead><tr><th>Task</th><th>Details</th><th>Non-Prod</th><th>Prod</th><th>Qty</th><th>Total Hrs</th><th>CSU</th></tr></thead>
+        <tbody>${rows}</tbody>
+    </table>`;
+    parent.appendChild(sec);
 }
-function renderSection(parent,title,tasks,editable){
-if(tasks.length===0) return;
-const sec=document.createElement("div");
-sec.className="section";
-sec.innerHTML=`<div class="section-header">${title}</div>`;
-let rows="";
-let sectionTotal = 0;
-let sectionCSU = 0;
-tasks.forEach((t,i)=>{
-const total=(t.nonProd+t.prod)*t.qty;
-const csu = total/2;
-sectionTotal += total;
-sectionCSU += csu;
-const sectionKey = title.replace(/[^a-zA-Z0-9]/g,'_');
-rows+=`
-<tr>
-<td class="task-name">${t.name}</td>
-<td class="task-details">${t.detail}</td>
-<td>${editable?`<input type="number" step="0.1" value="${t.nonProd}" data-section="${sectionKey}" data-index="${i}" data-field="nonProd" class="editable-field">`:t.nonProd.toFixed(1)}</td>
-<td>${editable?`<input type="number" step="0.1" value="${t.prod}" data-section="${sectionKey}" data-index="${i}" data-field="prod" class="editable-field">`:t.prod.toFixed(1)}</td>
-<td>${editable?`<input type="number" value="${t.qty}" data-section="${sectionKey}" data-index="${i}" data-field="qty" class="editable-field">`:t.qty}</td>
-<td>${total.toFixed(1)}</td>
-<td>${csu.toFixed(1)}</td>
-</tr>`;
-});
-// Add section total row
-rows += `
-<tr class="section-total">
-<td colspan="5" style="text-align:right;">Section Total:</td>
-<td>${sectionTotal.toFixed(1)}</td>
-<td>${sectionCSU.toFixed(1)}</td>
-</tr>`;
-sec.innerHTML+=`
-<table>
-<thead>
-<tr>
-<th>Task</th>
-<th>Details</th>
-<th>Non-Prod</th>
-<th>Prod</th>
-<th>Qty</th>
-<th>Total Man Hours</th>
-<th>CSU</th>
-</tr>
-</thead>
-<tbody>${rows}</tbody>
-</table>`;
-parent.appendChild(sec);
-}
+
 function renderSelector(){
-const container = document.getElementById('productContainer');
-container.innerHTML = '';
-updateSummary();
-PRODUCTS.forEach(product => {
-const productDiv = document.createElement('div');
-productDiv.className = 'section';
-const modulesInProduct = MODULES.filter(m => m.product === product.name);
-if (!personalizationCounts[product.name]) {
-personalizationCounts[product.name] = 0;
+    const container = document.getElementById('productContainer');
+    container.innerHTML = '';
+    updateSummary();
+    
+    PRODUCTS.forEach(product => {
+        const productDiv = document.createElement('div');
+        productDiv.className = 'section';
+        const modulesInProduct = MODULES.filter(m => m.product === product.name);
+        if (!personalizationCounts[product.name]) personalizationCounts[product.name] = 0;
+        const safeId = product.name.replace(/\s+/g, '_');
+        
+        productDiv.innerHTML = `
+            <div class="product-header">${product.name}</div>
+            <div style="padding:10px; background:#f9f9f9;">
+                <label>Personalizations: 
+                    <input type="number" min="0" value="${personalizationCounts[product.name]}" style="width:80px;" onchange="updatePersonalization('${product.name}', this.value)">
+                </label>
+            </div>
+            <table>
+                <thead><tr><th style="width:50%">Module</th><th>Features</th><th>Selected</th></tr></thead>
+                <tbody id="mods_${safeId}"></tbody>
+            </table>`;
+        container.appendChild(productDiv);
+        
+        const tbody = document.getElementById(`mods_${safeId}`);
+        modulesInProduct.forEach(mod => {
+            const isSelected = selectedModules.has(mod.name);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="text-align:left;">${mod.name}</td>
+                <td>${mod.count}</td>
+                <td><button class="module-toggle-btn ${isSelected?'selected':'unselected'}" onclick="toggleModule('${mod.name.replace(/'/g,"\\'")}')">${isSelected ? 'Yes' : 'No'}</button></td>`;
+            tbody.appendChild(row);
+        });
+    });
 }
-const safeId = product.name.replace(/\s+/g, '_').replace(/&/g,'and');
-// Using the product-header class for black background with white text
-productDiv.innerHTML = `
-<div class="product-header">${product.name} (Weight: ${product.weight})</div>
-<div style="padding:12px 16px;background:var(--oracle-background-grey);">
-<label style="font-weight:600;">Personalizations:
-<input type="number" min="0" value="${personalizationCounts[product.name]}"
-style="width:100px;margin-left:8px;"
-onchange="updatePersonalization('${product.name}', this.value)">
-</label>
-</div>
-<table>
-<thead><tr><th style="width:50%">Module</th><th>Features</th><th>Selected</th></tr></thead>
-<tbody id="mods_${safeId}"></tbody>
-</table>`;
-container.appendChild(productDiv);
-const tbody = document.getElementById(`mods_${safeId}`);
-modulesInProduct.forEach(mod => {
-const isSelected = selectedModules.has(mod.name);
-const row = document.createElement('tr');
-row.innerHTML = `
-<td style="text-align:left;">${mod.name}</td>
-<td>${mod.count}</td>
-<td><button class="module-toggle-btn ${isSelected?'selected':'unselected'}"
-onclick="toggleModule('${mod.name.replace(/'/g,"\\'")}')">
-${isSelected ? 'Yes' : 'No'}
-</button></td>`;
-tbody.appendChild(row);
-});
-});
-}
+
 function toggleModule(moduleName) {
-if (selectedModules.has(moduleName)) {
-selectedModules.delete(moduleName);
-} else {
-selectedModules.add(moduleName);
+    if (selectedModules.has(moduleName)) selectedModules.delete(moduleName);
+    else selectedModules.add(moduleName);
+    renderSelector();
+    rebuildProductConfig();
+    renderEstimation();
 }
-renderSelector();
-rebuildProductConfig();
-renderEstimation();
-}
+
 function updatePersonalization(productName, value) {
-personalizationCounts[productName] = parseInt(value) || 0;
-rebuildProductConfig();
-renderEstimation();
+    personalizationCounts[productName] = parseInt(value) || 0;
+    rebuildProductConfig();
+    renderEstimation();
 }
+
 function updateSummary() {
-document.getElementById('moduleCount').value = selectedModules.size;
-const selectedProducts = new Set();
-selectedModules.forEach(name => {
-const mod = MODULES.find(m => m.name === name);
-if (mod) selectedProducts.add(mod.product);
-});
-document.getElementById('productCount').value = selectedProducts.size;
+    document.getElementById('moduleCount').value = selectedModules.size;
+    const selectedProducts = new Set();
+    selectedModules.forEach(name => {
+        const mod = MODULES.find(m => m.name === name);
+        if (mod) selectedProducts.add(mod.product);
+    });
+    document.getElementById('productCount').value = selectedProducts.size;
 }
+
 function rebuildProductConfig(){
-CONFIG.products = {};
-const selectedProducts = new Set();
-selectedModules.forEach(name => {
-const mod = MODULES.find(m => m.name === name);
-if (mod) selectedProducts.add(mod.product);
-});
-selectedProducts.forEach(productName => {
-const product = PRODUCTS.find(p => p.name === productName);
-let featureCount = 0;
-MODULES.filter(m => m.product === productName).forEach(m => {
-if (selectedModules.has(m.name)) featureCount += m.count;
-});
-const persCount = personalizationCounts[productName] || 0;
-CONFIG.products[productName] = [
-{ name: "Features Enablement", detail: "Enabling Feature by Feature by setup, Profile option, Opt-in Enablement.", nonProd: 0.1, prod: 0.1, qty: featureCount },
-{ name: "Verification of Enabled Features at Config Level", detail: "Once All the features are enabled, verified all features enablement.", nonProd: 0.1, prod: 0.1, qty: featureCount },
-{ name: "Verification of Enabled Features at UI", detail: "Verification of enabled functionality by going into respective UI once all the features are enabled.", nonProd: 8 * product.weight, prod: 8 * product.weight, qty: 1 },
-{ name: "Unit Testing w/o Personalization", detail: "Testing of Std Process by creating transaction.", nonProd: 24 * product.weight, prod: 0, qty: 1 },
-{ name: "Comparison between Classic vs Redwood", detail: "Column by Column comparison between Classic and Redwood to ensure everything is covered.", nonProd: 16 * product.weight, prod: 0, qty: 1 },
-{ name: "Enablement of Personalization and Production Migration", detail: "This is per Personalization time / Env", nonProd: 2, prod: 1, qty: persCount },
-{ name: "Testing After Personalizations", detail: "This can Vary with no.of Features and business process and Complexity", nonProd: 40, prod: 0, qty: persCount > 0 ? 1 : 0 }
-];
-});
-let totalPers = 0;
-selectedProducts.forEach(p => { totalPers += personalizationCounts[p] || 0; });
-CONFIG.hypercare[0].qty = totalPers;
-CONFIG.hypercare[1].qty = Math.max(3, Math.ceil(totalPers * 0.2));
+    CONFIG.products = {};
+    const selectedProducts = new Set();
+    selectedModules.forEach(name => {
+        const mod = MODULES.find(m => m.name === name);
+        if (mod) selectedProducts.add(mod.product);
+    });
+    
+    selectedProducts.forEach(productName => {
+        const product = PRODUCTS.find(p => p.name === productName);
+        let featureCount = 0;
+        MODULES.filter(m => m.product === productName).forEach(m => {
+            if (selectedModules.has(m.name)) featureCount += m.count;
+        });
+        const persCount = personalizationCounts[productName] || 0;
+        
+        CONFIG.products[productName] = [
+            { name: "Features Enablement", detail: "Setup, Profile option, Opt-in", nonProd: 0.1, prod: 0.1, qty: featureCount },
+            { name: "Verification (Config)", detail: "Verify feature enablement", nonProd: 0.1, prod: 0.1, qty: featureCount },
+            { name: "Verification (UI)", detail: "UI Verification", nonProd: 8 * product.weight, prod: 8 * product.weight, qty: 1 },
+            { name: "Unit Testing", detail: "Standard Process Testing", nonProd: 24 * product.weight, prod: 0, qty: 1 },
+            { name: "Classic vs Redwood Comparison", detail: "Column by Column comparison", nonProd: 16 * product.weight, prod: 0, qty: 1 },
+            { name: "Personalization Enablement", detail: "Redo personalizations", nonProd: 2, prod: 1, qty: persCount },
+            { name: "Testing After Personalizations", detail: "Testing post-personalization", nonProd: 40, prod: 0, qty: persCount > 0 ? 1 : 0 }
+        ];
+    });
+    
+    let totalPers = 0;
+    selectedProducts.forEach(p => { totalPers += personalizationCounts[p] || 0; });
+    CONFIG.hypercare[0].qty = totalPers;
+    CONFIG.hypercare[1].qty = Math.max(3, Math.ceil(totalPers * 0.2));
 }
+
 function renderEstimation(){
-const c=document.getElementById("formContainer");
-c.innerHTML="";
-renderSection(c,"Overview",CONFIG.overview,false);
-Object.keys(CONFIG.products).forEach(productName => {
-renderSection(c,`Product: ${productName}`, CONFIG.products[productName], false);
-});
-renderSection(c,"UAT and Migration, Hypercare",CONFIG.hypercare,false);
-// Add grand total section
-renderGrandTotal(c);
+    const c = document.getElementById("formContainer");
+    c.innerHTML = "";
+    renderSection(c, "Overview", CONFIG.overview, false);
+    Object.keys(CONFIG.products).forEach(productName => {
+        renderSection(c, `Product: ${productName}`, CONFIG.products[productName], false);
+    });
+    renderSection(c, "UAT, Migration, Hypercare", CONFIG.hypercare, false);
+    renderGrandTotal(c);
 }
+
 function renderAdmin(){
-const c=document.getElementById("adminContainer");
-c.innerHTML="";
-renderSection(c,"Overview",CONFIG.overview,true);
-Object.keys(CONFIG.products).forEach(productName => {
-renderSection(c,`Product: ${productName}`, CONFIG.products[productName], true);
-});
-renderSection(c,"UAT and Migration, Hypercare",CONFIG.hypercare,true);
-// Add grand total section
-renderGrandTotal(c);
+    const c = document.getElementById("adminContainer");
+    c.innerHTML = "";
+    renderSection(c, "Overview", CONFIG.overview, true);
+    Object.keys(CONFIG.products).forEach(productName => {
+        renderSection(c, `Product: ${productName}`, CONFIG.products[productName], true);
+    });
+    renderSection(c, "UAT, Migration, Hypercare", CONFIG.hypercare, true);
+    renderGrandTotal(c);
 }
+
 function renderGrandTotal(parent) {
-let grandTotal = 0;
-let grandCSU = 0;
-// Calculate from Overview
-CONFIG.overview.forEach(t => {
-const total = (t.nonProd + t.prod) * t.qty;
-grandTotal += total;
-grandCSU += total / 2;
+    let grandTotal = 0;
+    let grandCSU = 0;
+    CONFIG.overview.forEach(t => { const total = (t.nonProd + t.prod) * t.qty; grandTotal += total; grandCSU += total/2; });
+    Object.values(CONFIG.products).forEach(tasks => { tasks.forEach(t => { const total = (t.nonProd + t.prod) * t.qty; grandTotal += total; grandCSU += total/2; }); });
+    CONFIG.hypercare.forEach(t => { const total = (t.nonProd + t.prod) * t.qty; grandTotal += total; grandCSU += total/2; });
+    
+    const sec = document.createElement("div");
+    sec.className = "section";
+    sec.style.marginTop = "30px";
+    sec.innerHTML = `
+        <div class="section-header" style="background:#333; font-size:18px;">📊 GRAND TOTAL</div>
+        <table>
+            <thead>
+                <tr style="background:#f4f4f4;">
+                    <th colspan="5" style="text-align:right;">TOTAL ESTIMATION</th>
+                    <th style="font-size:16px;">${grandTotal.toFixed(1)} Hours</th>
+                    <th style="font-size:16px;">${grandCSU.toFixed(1)} CSU</th>
+                </tr>
+            </thead>
+        </table>`;
+    parent.appendChild(sec);
+}
+
+// Event Delegation for Inputs
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('editable-field')) {
+        const sectionKey = e.target.getAttribute('data-section');
+        const index = parseInt(e.target.getAttribute('data-index'));
+        const field = e.target.getAttribute('data-field');
+        const value = field === 'qty' ? (parseInt(e.target.value)||0) : (parseFloat(e.target.value)||0);
+        updateTask(sectionKey, index, field, value);
+    }
 });
-// Calculate from Products
-Object.values(CONFIG.products).forEach(tasks => {
-tasks.forEach(t => {
-const total = (t.nonProd + t.prod) * t.qty;
-grandTotal += total;
-grandCSU += total / 2;
-});
-});
-// Calculate from Hypercare
-CONFIG.hypercare.forEach(t => {
-const total = (t.nonProd + t.prod) * t.qty;
-grandTotal += total;
-grandCSU += total / 2;
-});
-// Create grand total section with Oracle styling
-const sec = document.createElement("div");
-sec.className = "section";
-sec.style.marginTop = "30px";
-sec.innerHTML = `
-<div class="section-header" style="background:var(--oracle-dark-grey);color:var(--oracle-white);font-size:18px;">📊 GRAND TOTAL</div>
-<table>
-<thead>
-<tr style="background:var(--oracle-background-grey);">
-<th colspan="5" style="text-align:right;font-size:16px;color:var(--oracle-dark-grey);">TOTAL ESTIMATION</th>
-<th style="font-size:16px;color:var(--oracle-dark-grey);font-weight:700;">${grandTotal.toFixed(1)} Hours</th>
-<th style="font-size:16px;color:var(--oracle-dark-grey);font-weight:700;">${grandCSU.toFixed(1)} CSU</th>
-</tr>
-</thead>
-</table>
-`;
-parent.appendChild(sec);
+
+function updateTask(sectionKey, idx, field, value){
+    if(sectionKey === "Overview" && CONFIG.overview[idx]) CONFIG.overview[idx][field] = value;
+    else if(sectionKey.includes("Hypercare") && CONFIG.hypercare[idx]) CONFIG.hypercare[idx][field] = value;
+    else if(sectionKey.includes("Product")) {
+        let productName = sectionKey.replace(/^Product_+/, "").replace(/_/g, " ");
+        let matchingProduct = Object.keys(CONFIG.products).find(p => p === productName);
+        if (!matchingProduct) matchingProduct = Object.keys(CONFIG.products).find(p => p.replace(/[^a-zA-Z0-9]/g,'').toLowerCase() === productName.replace(/[^a-zA-Z0-9]/g,'').toLowerCase());
+        if(matchingProduct && CONFIG.products[matchingProduct][idx]) CONFIG.products[matchingProduct][idx][field] = value;
+    }
+    renderEstimation();
+    if(currentUser === 'admin') renderAdmin();
 }
-function updateTask(sectionKey,idx,field,value){
-value = field==='qty' ? (parseInt(value)||0) : (parseFloat(value)||0);
-console.log('updateTask called:', {sectionKey, idx, field, value});
-if(sectionKey==="Overview") {
-if(CONFIG.overview[idx]) {
-CONFIG.overview[idx][field]=value;
-console.log('Updated Overview');
-}
-} else if(sectionKey.includes("Hypercare") || sectionKey.includes("UAT")) {
-if(CONFIG.hypercare[idx]) {
-CONFIG.hypercare[idx][field]=value;
-console.log('Updated Hypercare');
-}
-} else if(sectionKey.includes("Product")) {
-// Handle product sections - extract product name from section key
-// Section key format: "Product__ProductName" where __ comes from "Product: "
-let productName = sectionKey.replace(/^Product_+/, "").replace(/_/g, " ");
-console.log('Looking for product:', productName);
-console.log('Available products:', Object.keys(CONFIG.products));
-// Try to find exact match first
-let matchingProduct = Object.keys(CONFIG.products).find(p => p === productName);
-// If no exact match, try fuzzy matching
-if (!matchingProduct) {
-matchingProduct = Object.keys(CONFIG.products).find(p =>
-p.replace(/[^a-zA-Z0-9]/g,'').toLowerCase() === productName.replace(/[^a-zA-Z0-9]/g,'').toLowerCase()
-);
-}
-console.log('Matched product:', matchingProduct);
-if(matchingProduct && CONFIG.products[matchingProduct] && CONFIG.products[matchingProduct][idx]) {
-CONFIG.products[matchingProduct][idx][field] = value;
-console.log('Updated product task');
-} else {
-console.error('Could not update - product or task not found');
-}
-}
-// Re-render both estimation and admin sections
-renderEstimation();
-if(currentUser === 'admin') {
-renderAdmin();
-}
-}
+
 function downloadEstimation(){
-const customerName = document.getElementById('customerName').value || 'Customer';
-const wb = XLSX.utils.book_new();
-const ws_data = [];
-// Header with customer info
-ws_data.push(['Redwood Adoption Estimator']);
-ws_data.push(['Customer:', customerName]);
-ws_data.push(['Date:', new Date().toLocaleDateString()]);
-ws_data.push([]);
-// Column headers
-ws_data.push(['Section', 'Task', 'Details', 'Non-Prod', 'Prod', 'Qty', 'Total Man Hours', 'CSU']);
-// Overview section
-let sectionTotal = 0;
-let sectionCSU = 0;
-CONFIG.overview.forEach(t => {
-const tot = (t.nonProd + t.prod) * t.qty;
-const csu = tot / 2;
-sectionTotal += tot;
-sectionCSU += csu;
-ws_data.push(['Overview', t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
-});
-ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
-ws_data.push([]);
-// Product sections
-let grandTotal = sectionTotal;
-let grandCSU = sectionCSU;
-Object.entries(CONFIG.products).forEach(([prodName, tasks]) => {
-sectionTotal = 0;
-sectionCSU = 0;
-tasks.forEach(t => {
-const tot = (t.nonProd + t.prod) * t.qty;
-const csu = tot / 2;
-sectionTotal += tot;
-sectionCSU += csu;
-ws_data.push([`Product: ${prodName}`, t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
-});
-ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
-ws_data.push([]);
-grandTotal += sectionTotal;
-grandCSU += sectionCSU;
-});
-// Hypercare section
-sectionTotal = 0;
-sectionCSU = 0;
-CONFIG.hypercare.forEach(t => {
-const tot = (t.nonProd + t.prod) * t.qty;
-const csu = tot / 2;
-sectionTotal += tot;
-sectionCSU += csu;
-ws_data.push(['UAT and Migration, Hypercare', t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
-});
-ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
-ws_data.push([]);
-grandTotal += sectionTotal;
-grandCSU += sectionCSU;
-// Grand total
-ws_data.push(['', '', '', '', '', 'GRAND TOTAL:', grandTotal, grandCSU]);
-ws_data.push([]);
-
-// --- ADD SUMMARY TABLE ---
-ws_data.push(['SUMMARY']);
-ws_data.push(['Product', 'Module', 'Features', 'Personalization', 'Complexity', 'CSU Features', 'Actual CSU']);
-
-let summaryTotalFeatures = 0;
-let summaryTotalPers = 0;
-let summaryTotalCSU = 0;
-
-// Generate Summary Rows based on selected modules
-MODULES.forEach(mod => {
-    if(selectedModules.has(mod.name)) {
-        const prodName = mod.product;
-        const featCount = mod.count;
-        const persCount = personalizationCounts[prodName] || 0;
-        const complexity = 1;
-        
-        // Calculate CSU for this module (Approximation based on total effort / 2 for this module's tasks)
-        // For simplicity in summary, we use the logic: (Features * 0.2 + Pers * 2) / 2 roughly, 
-        // but to match the template's Grand Total CSU distribution, we'll distribute proportionally or use fixed logic.
-        // Based on prompt example: Purchasing 30 Feat, 20 Pers -> 105 CSU. OM 15 Feat, 22 Pers -> 36 CSU.
-        // It seems CSU is calculated as Total Hours / 2 for that product.
-        // We will calculate product specific total hours here.
-        
-        let prodTotalHours = 0;
-        if(CONFIG.products[prodName]) {
-            CONFIG.products[prodName].forEach(t => {
-                prodTotalHours += (t.nonProd + t.prod) * t.qty;
-            });
+    const customerName = document.getElementById('customerName').value || 'Customer';
+    const wb = XLSX.utils.book_new();
+    const ws_data = [];
+    
+    // Header
+    ws_data.push(['Redwood Adoption Estimator']);
+    ws_data.push(['Customer:', customerName]);
+    ws_data.push(['Date:', new Date().toLocaleDateString()]);
+    ws_data.push([]);
+    ws_data.push(['Section', 'Task', 'Details', 'Non-Prod', 'Prod', 'Qty', 'Total Man Hours', 'CSU']);
+    
+    // Overview
+    let sectionTotal = 0, sectionCSU = 0;
+    CONFIG.overview.forEach(t => {
+        const tot = (t.nonProd + t.prod) * t.qty;
+        const csu = tot / 2;
+        sectionTotal += tot; sectionCSU += csu;
+        ws_data.push(['Overview', t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
+    });
+    ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
+    ws_data.push([]);
+    
+    // Products
+    let grandTotal = sectionTotal, grandCSU = sectionCSU;
+    Object.entries(CONFIG.products).forEach(([prodName, tasks]) => {
+        sectionTotal = 0; sectionCSU = 0;
+        tasks.forEach(t => {
+            const tot = (t.nonProd + t.prod) * t.qty;
+            const csu = tot / 2;
+            sectionTotal += tot; sectionCSU += csu;
+            ws_data.push([`Product: ${prodName}`, t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
+        });
+        ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
+        ws_data.push([]);
+        grandTotal += sectionTotal; grandCSU += sectionCSU;
+    });
+    
+    // Hypercare
+    sectionTotal = 0; sectionCSU = 0;
+    CONFIG.hypercare.forEach(t => {
+        const tot = (t.nonProd + t.prod) * t.qty;
+        const csu = tot / 2;
+        sectionTotal += tot; sectionCSU += csu;
+        ws_data.push(['UAT, Migration, Hypercare', t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
+    });
+    ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
+    ws_data.push([]);
+    grandTotal += sectionTotal; grandCSU += sectionCSU;
+    
+    ws_data.push(['', '', '', '', '', 'GRAND TOTAL:', grandTotal, grandCSU]);
+    ws_data.push([]);
+    
+    // SUMMARY TABLE (Turn 2 Requirement)
+    ws_data.push(['SUMMARY']);
+    ws_data.push(['Product', 'Module', 'Features', 'Personalization', 'Complexity', 'CSU Features', 'Actual CSU']);
+    
+    let summaryTotalFeatures = 0, summaryTotalPers = 0, summaryTotalCSU = 0;
+    const productTotals = {};
+    
+    MODULES.forEach(mod => {
+        if(selectedModules.has(mod.name)) {
+            const prodName = mod.product;
+            const featCount = mod.count;
+            const persCount = personalizationCounts[prodName] || 0;
+            
+            let prodTotalHours = 0;
+            if(CONFIG.products[prodName]) {
+                CONFIG.products[prodName].forEach(t => { prodTotalHours += (t.nonProd + t.prod) * t.qty; });
+            }
+            const prodCSU = prodTotalHours / 2;
+            
+            ws_data.push([prodName, mod.name, featCount, persCount, 1, prodCSU.toFixed(1), prodCSU.toFixed(1)]);
+            
+            summaryTotalFeatures += featCount;
+            summaryTotalPers += persCount;
+            
+            if(!productTotals[prodName]) productTotals[prodName] = { feat:0, pers:0, csu:0 };
+            productTotals[prodName].feat += featCount;
+            productTotals[prodName].pers += persCount;
+            productTotals[prodName].csu += prodCSU;
         }
-        const prodCSU = prodTotalHours / 2;
-        
-        ws_data.push([prodName, mod.name, featCount, persCount, complexity, prodCSU.toFixed(1), prodCSU.toFixed(1)]);
-        
-        summaryTotalFeatures += featCount;
-        summaryTotalPers += persCount;
-        summaryTotalCSU += prodCSU;
-    }
-});
-
-// Add Product Totals (Grouped)
-const productTotals = {};
-MODULES.forEach(mod => {
-    if(selectedModules.has(mod.name)) {
-        if(!productTotals[mod.product]) productTotals[mod.product] = { feat:0, pers:0, csu:0 };
-        productTotals[mod.product].feat += mod.count;
-        productTotals[mod.product].pers += (personalizationCounts[mod.product] || 0);
-        // Recalculate CSU for total row
-        let prodTotalHours = 0;
-        if(CONFIG.products[mod.product]) {
-            CONFIG.products[mod.product].forEach(t => {
-                prodTotalHours += (t.nonProd + t.prod) * t.qty;
-            });
+    });
+    
+    Object.entries(productTotals).forEach(([pname, data]) => {
+        ws_data.push(['Total', pname, data.feat, data.pers, 1, data.csu.toFixed(1), data.csu.toFixed(1)]);
+        summaryTotalCSU += data.csu;
+    });
+    
+    ws_data.push(['Grand Total', '', summaryTotalFeatures, summaryTotalPers, 1, summaryTotalCSU.toFixed(1), summaryTotalCSU.toFixed(1)]);
+    
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    ws['!cols'] = [{ wch: 30 }, { wch: 45 }, { wch: 60 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 18 }, { wch: 12 }];
+    
+    // Apply Excel Colors (Turn 2 Requirement)
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+            if (!ws[cell_address]) continue;
+            if (!ws[cell_address].s) ws[cell_address].s = {};
+            
+            // Header Row (Blue)
+            if (R === 4) {
+                ws[cell_address].s = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "5B9BD5" } }, alignment: { horizontal: "center" }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
+            }
+            // Section Totals (Green)
+            if (ws[cell_address].v === 'Section Total:') {
+                for (let colC = 0; colC <= 7; colC++) {
+                    const totalCell = XLSX.utils.encode_cell({ r: R, c: colC });
+                    if (ws[totalCell]) ws[totalCell].s = { font: { bold: true }, fill: { fgColor: { rgb: "C6EFCE" } }, alignment: { horizontal: colC >= 5 ? "center" : "right" }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
+                }
+            }
+            // Grand Total (Blue/Green)
+            if (ws[cell_address].v === 'GRAND TOTAL:') {
+                for (let colC = 0; colC <= 7; colC++) {
+                    const grandCell = XLSX.utils.encode_cell({ r: R, c: colC });
+                    if (ws[grandCell]) ws[grandCell].s = { font: { bold: true, sz: 14 }, fill: { fgColor: { rgb: "9CC2E5" } }, alignment: { horizontal: colC >= 5 ? "center" : "right" }, border: { top: { style: "medium" }, bottom: { style: "medium" }, left: { style: "thin" }, right: { style: "thin" } } };
+                }
+            }
+            // Summary Header
+            if (ws[cell_address].v === 'SUMMARY') {
+                ws[cell_address].s = { font: { bold: true, sz: 14 }, fill: { fgColor: { rgb: "DDEBF7" } } };
+            }
+            // Summary Table Header
+            if (ws[cell_address].v === 'Product' && C === 0 && R > 10) {
+                for (let colC = 0; colC <= 6; colC++) {
+                    const sumHead = XLSX.utils.encode_cell({ r: R, c: colC });
+                    if (ws[sumHead]) ws[sumHead].s = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "5B9BD5" } }, alignment: { horizontal: "center" }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
+                }
+            }
+            // Summary Totals
+            if (ws[cell_address].v === 'Total' || ws[cell_address].v === 'Grand Total') {
+                for (let colC = 0; colC <= 6; colC++) {
+                    const sumTot = XLSX.utils.encode_cell({ r: R, c: colC });
+                    if (ws[sumTot]) ws[sumTot].s = { font: { bold: true }, fill: { fgColor: { rgb: "C6EFCE" } }, alignment: { horizontal: "center" }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
+                }
+            }
+            // Alternating Rows
+            if (R > 4 && ws[cell_address].v !== 'Section Total:' && ws[cell_address].v !== 'GRAND TOTAL:' && ws[cell_address].v !== '' && ws[cell_address].v !== 'SUMMARY' && ws[cell_address].v !== 'Product' && ws[cell_address].v !== 'Total' && ws[cell_address].v !== 'Grand Total') {
+                ws[cell_address].s = { alignment: { horizontal: C <= 2 ? "left" : "center", vertical: "center", wrapText: C === 2 }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
+                if (R % 2 === 0) ws[cell_address].s.fill = { fgColor: { rgb: "DDEBF7" } };
+            }
+            // Number Format
+            if (C >= 3 && C <= 7 && R > 4 && typeof ws[cell_address].v === 'number') ws[cell_address].z = '0.0';
         }
-        productTotals[mod.product].csu = prodTotalHours / 2;
     }
-});
+    
+    XLSX.utils.book_append_sheet(wb, ws, "Estimation");
+    XLSX.writeFile(wb, `${customerName}_Redwood_Estimation.xlsx`);
+}
 
-Object.entries(productTotals).forEach(([pname, data]) => {
-    ws_data.push(['Total', pname, data.feat, data.pers, 1, data.csu.toFixed(1), data.csu.toFixed(1)]);
-    summaryTotalCSU += data.csu; // Avoid double counting if iterating modules above
-});
-
-ws_data.push(['Grand Total', '', summaryTotalFeatures, summaryTotalPers, 1, summaryTotalCSU.toFixed(1), summaryTotalCSU.toFixed(1)]);
-
-
-const ws = XLSX.utils.aoa_to_sheet(ws_data);
-// Set column widths
-ws['!cols'] = [
-{ wch: 30 },  // Section
-{ wch: 45 },  // Task
-{ wch: 60 },  // Details
-{ wch: 12 },  // Non-Prod
-{ wch: 12 },  // Prod
-{ wch: 8 },   // Qty
-{ wch: 18 },  // Total Man Hours
-{ wch: 12 }   // CSU
-];
-// Apply styles
-const range = XLSX.utils.decode_range(ws['!ref']);
-for (let R = range.s.r; R <= range.e.r; ++R) {
-for (let C = range.s.c; C <= range.e.c; ++C) {
-const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
-if (!ws[cell_address]) continue;
-// Initialize cell style
-if (!ws[cell_address].s) ws[cell_address].s = {};
-// Title row (row 0)
-if (R === 0) {
-ws[cell_address].s = {
-font: { bold: true, sz: 16, color: { rgb: "000000" } },
-alignment: { horizontal: "left" }
-};
-}
-// Header row (row 4) - Excel blue
-if (R === 4) {
-ws[cell_address].s = {
-font: { bold: true, color: { rgb: "FFFFFF" } },
-fill: { fgColor: { rgb: "5B9BD5" } },
-alignment: { horizontal: "center", vertical: "center" },
-border: {
-top: { style: "thin", color: { rgb: "000000" } },
-bottom: { style: "thin", color: { rgb: "000000" } },
-left: { style: "thin", color: { rgb: "000000" } },
-right: { style: "thin", color: { rgb: "000000" } }
-}
-};
-}
-// Section header rows (grey)
-if (ws[cell_address].v === 'Overview' || ws[cell_address].v === 'UAT and Migration, Hypercare' || 
-    (typeof ws[cell_address].v === 'string' && ws[cell_address].v.startsWith('Product:'))) {
-for (let colC = 0; colC <= 7; colC++) {
-const headerCell = XLSX.utils.encode_cell({ r: R, c: colC });
-if (ws[headerCell]) {
-ws[headerCell].s = {
-font: { bold: true, color: { rgb: "FFFFFF" } },
-fill: { fgColor: { rgb: "A5A5A5" } },
-alignment: { horizontal: "left" },
-border: {
-top: { style: "thin" },
-bottom: { style: "thin" },
-left: { style: "thin" },
-right: { style: "thin" }
-}
-};
-}
-}
-}
-// Section total rows (light green)
-if (ws[cell_address].v === 'Section Total:') {
-for (let colC = 0; colC <= 7; colC++) {
-const totalCell = XLSX.utils.encode_cell({ r: R, c: colC });
-if (ws[totalCell]) {
-ws[totalCell].s = {
-font: { bold: true },
-fill: { fgColor: { rgb: "C6EFCE" } },
-alignment: { horizontal: colC >= 5 ? "center" : "right" },
-border: {
-top: { style: "thin" },
-bottom: { style: "thin" },
-left: { style: "thin" },
-right: { style: "thin" }
-}
-};
-}
-}
-}
-// Grand total row (darker green/blue)
-if (ws[cell_address].v === 'GRAND TOTAL:') {
-for (let colC = 0; colC <= 7; colC++) {
-const grandTotalCell = XLSX.utils.encode_cell({ r: R, c: colC });
-if (ws[grandTotalCell]) {
-ws[grandTotalCell].s = {
-font: { bold: true, sz: 14 },
-fill: { fgColor: { rgb: "9CC2E5" } },
-alignment: { horizontal: colC >= 5 ? "center" : "right" },
-border: {
-top: { style: "medium" },
-bottom: { style: "medium" },
-left: { style: "thin" },
-right: { style: "thin" }
-}
-};
-}
-}
-}
-// Summary header
-if (ws[cell_address].v === 'SUMMARY') {
-ws[cell_address].s = {
-font: { bold: true, sz: 14, color: { rgb: "000000" } },
-fill: { fgColor: { rgb: "DDEBF7" } },
-alignment: { horizontal: "left" }
-};
-}
-// Summary table header row
-if (ws[cell_address].v === 'Product' && C === 0 && R > 10) {
-for (let colC = 0; colC <= 6; colC++) {
-const summaryHeaderCell = XLSX.utils.encode_cell({ r: R, c: colC });
-if (ws[summaryHeaderCell]) {
-ws[summaryHeaderCell].s = {
-font: { bold: true, color: { rgb: "FFFFFF" } },
-fill: { fgColor: { rgb: "5B9BD5" } },
-alignment: { horizontal: "center", vertical: "center" },
-border: {
-top: { style: "thin" },
-bottom: { style: "thin" },
-left: { style: "thin" },
-right: { style: "thin" }
-}
-};
-}
-}
-}
-// Summary total rows (light green)
-if (ws[cell_address].v === 'Total' || ws[cell_address].v === 'Grand Total') {
-for (let colC = 0; colC <= 6; colC++) {
-const summaryTotalCell = XLSX.utils.encode_cell({ r: R, c: colC });
-if (ws[summaryTotalCell]) {
-ws[summaryTotalCell].s = {
-font: { bold: true },
-fill: { fgColor: { rgb: "C6EFCE" } },
-alignment: { horizontal: "center" },
-border: {
-top: { style: "thin" },
-bottom: { style: "thin" },
-left: { style: "thin" },
-right: { style: "thin" }
-}
-};
-}
-}
-}
-// Regular data rows
-if (R > 4 && ws[cell_address].v !== 'Section Total:' && ws[cell_address].v !== 'GRAND TOTAL:' && 
-    ws[cell_address].v !== '' && ws[cell_address].v !== 'SUMMARY' && 
-    ws[cell_address].v !== 'Product' && ws[cell_address].v !== 'Total' && ws[cell_address].v !== 'Grand Total') {
-ws[cell_address].s = {
-alignment: {
-horizontal: C <= 2 ? "left" : "center",
-vertical: "center",
-wrapText: C === 2
-},
-border: {
-top: { style: "thin", color: { rgb: "BDBDBD" } },
-bottom: { style: "thin", color: { rgb: "BDBDBD" } },
-left: { style: "thin", color: { rgb: "BDBDBD" } },
-right: { style: "thin", color: { rgb: "BDBDBD" } }
-}
-};
-// Alternate row coloring
-if (R % 2 === 0) {
-ws[cell_address].s.fill = { fgColor: { rgb: "DDEBF7" } };
-}
-}
-// Number formatting for numeric columns
-if (C >= 3 && C <= 7 && R > 4 && typeof ws[cell_address].v === 'number') {
-ws[cell_address].z = '0.0';
-}
-}
-}
-XLSX.utils.book_append_sheet(wb, ws, "Estimation");
-XLSX.writeFile(wb, `${customerName}_Redwood_Estimation.xlsx`);
-}
 function downloadJSON() {
-const customerName = document.getElementById('customerName').value || 'Customer';
-// Create a complete snapshot of the application state
-const jsonData = {
-version: '1.0',
-exportDate: new Date().toISOString(),
-customerName: customerName,
-selectedModules: Array.from(selectedModules),
-personalizationCounts: personalizationCounts,
-config: CONFIG
-};
-// Convert to JSON string with formatting
-const jsonString = JSON.stringify(jsonData, null, 2);
-// Create blob and download
-const blob = new Blob([jsonString], { type: 'application/json' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `${customerName}_Redwood_Config.json`;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
+    const customerName = document.getElementById('customerName').value || 'Customer';
+    const jsonData = { version: '1.0', exportDate: new Date().toISOString(), customerName: customerName, selectedModules: Array.from(selectedModules), personalizationCounts: personalizationCounts, config: CONFIG };
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${customerName}_Redwood_Config.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
+
 function uploadJSON() {
-const file = document.getElementById('jsonFile').files[0];
-if (!file) {
-alert('Please select a JSON file first');
-return;
-}
-const reader = new FileReader();
-reader.onload = function(e) {
-try {
-const jsonData = JSON.parse(e.target.result);
-// Validate the JSON structure
-if (!jsonData.config || !jsonData.selectedModules) {
-throw new Error('Invalid JSON structure. Please upload a valid configuration file.');
-}
-// Restore the application state
-document.getElementById('customerName').value = jsonData.customerName || 'Customer';
-// Restore selected modules
-selectedModules.clear();
-jsonData.selectedModules.forEach(mod => selectedModules.add(mod));
-// Restore personalization counts
-personalizationCounts = Object.assign({}, jsonData.personalizationCounts || {});
-// Restore configuration - deep copy to avoid reference issues
-CONFIG.overview = JSON.parse(JSON.stringify(jsonData.config.overview));
-CONFIG.products = JSON.parse(JSON.stringify(jsonData.config.products));
-CONFIG.hypercare = JSON.parse(JSON.stringify(jsonData.config.hypercare));
-// Re-render everything
-renderSelector();
-renderEstimation();
-if(currentUser === 'admin') {
-renderAdmin();
-}
-alert('JSON configuration imported successfully!');
-// Clear the file input
-document.getElementById('jsonFile').value = '';
-} catch(err) {
-console.error('JSON Upload error:', err);
-alert('Error reading JSON file: ' + err.message + '
-Please ensure you are uploading a valid JSON configuration file.');
-}
-};
-reader.readAsText(file);
+    const file = document.getElementById('jsonFile').files[0];
+    if (!file) { alert('Please select a JSON file first'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const jsonData = JSON.parse(e.target.result);
+            if (!jsonData.config || !jsonData.selectedModules) throw new Error('Invalid JSON structure');
+            document.getElementById('customerName').value = jsonData.customerName || 'Customer';
+            selectedModules.clear();
+            jsonData.selectedModules.forEach(mod => selectedModules.add(mod));
+            personalizationCounts = Object.assign({}, jsonData.personalizationCounts || {});
+            CONFIG.overview = JSON.parse(JSON.stringify(jsonData.config.overview));
+            CONFIG.products = JSON.parse(JSON.stringify(jsonData.config.products));
+            CONFIG.hypercare = JSON.parse(JSON.stringify(jsonData.config.hypercare));
+            renderSelector();
+            renderEstimation();
+            if(currentUser === 'admin') renderAdmin();
+            alert('JSON configuration imported successfully!');
+            document.getElementById('jsonFile').value = '';
+        } catch(err) {
+            alert('Error reading JSON file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
 }
 </script>
 </body>
