@@ -462,51 +462,67 @@
         }
 
         function processFeatureData(data) {
-            const productCounts = {};
+            const productModuleData = {};
             
             data.forEach(row => {
                 // Try different column name variations
                 const product = row.Product || row.product || row.PRODUCT;
                 const module = row.Module || row.module || row.MODULE;
+                const feature = row.Feature || row.feature || row.FEATURE || row.Features;
                 
                 if (product) {
-                    if (!productCounts[product]) {
-                        productCounts[product] = { features: 0, modules: new Set() };
+                    if (!productModuleData[product]) {
+                        productModuleData[product] = {};
                     }
-                    productCounts[product].features += 1;
+                    
+                    // If module is specified, count features per module
                     if (module) {
-                        productCounts[product].modules.add(module);
+                        if (!productModuleData[product][module]) {
+                            productModuleData[product][module] = 0;
+                        }
+                        productModuleData[product][module] += 1;
+                    } else {
+                        // If no module, use product name as module
+                        if (!productModuleData[product][product]) {
+                            productModuleData[product][product] = 0;
+                        }
+                        productModuleData[product][product] += 1;
                     }
                 }
             });
 
-            // Convert to simple feature counts
-            const result = {};
-            Object.keys(productCounts).forEach(product => {
-                result[product] = productCounts[product].features;
-            });
-
-            return result;
+            return productModuleData;
         }
 
         function processPersonalizationData(data) {
-            const persCounts = {};
+            const productModuleData = {};
             
             data.forEach(row => {
                 // Try different column name variations
                 const product = row.Product || row.product || row.PRODUCT;
-                const pers = row.Personalizations || row.personalizations || row.PERSONALIZATIONS ||
-                           row['Total Personalizations'] || row.Personalization || 0;
+                const module = row.Module || row.module || row.MODULE;
+                const pers = row['Total Number of Personalizations'] || 
+                           row['Total Personalizations'] || 
+                           row.Personalizations || 
+                           row.personalizations || 
+                           row.PERSONALIZATIONS || 0;
                 
-                if (product && pers) {
-                    if (!persCounts[product]) {
-                        persCounts[product] = 0;
+                if (product) {
+                    if (!productModuleData[product]) {
+                        productModuleData[product] = {};
                     }
-                    persCounts[product] += parseInt(pers) || 0;
+                    
+                    // If module is specified, store by module
+                    if (module && module !== product) {
+                        productModuleData[product][module] = parseInt(pers) || 0;
+                    } else {
+                        // If no module, use product name as module
+                        productModuleData[product][product] = parseInt(pers) || 0;
+                    }
                 }
             });
 
-            return persCounts;
+            return productModuleData;
         }
 
         function updateConfiguration() {
@@ -516,20 +532,31 @@
             let totalFeatures = 0;
             let totalPers = 0;
 
-            // Combine features and personalizations
+            // Get all unique products from both datasets
             const allProducts = new Set([...Object.keys(featureData), ...Object.keys(personalizationData)]);
             
+            // Build module-level configuration
             allProducts.forEach(product => {
-                const features = featureData[product] || 0;
-                const pers = personalizationData[product] || 0;
+                productConfig[product] = {};
                 
-                productConfig[product] = {
-                    features: features,
-                    personalizations: pers
-                };
-
-                totalFeatures += features;
-                totalPers += pers;
+                // Get all modules for this product from both sources
+                const featureModules = featureData[product] || {};
+                const persModules = personalizationData[product] || {};
+                const allModules = new Set([...Object.keys(featureModules), ...Object.keys(persModules)]);
+                
+                // Combine data for each module
+                allModules.forEach(module => {
+                    const features = featureModules[module] || 0;
+                    const pers = persModules[module] || 0;
+                    
+                    productConfig[product][module] = {
+                        features: features,
+                        personalizations: pers
+                    };
+                    
+                    totalFeatures += features;
+                    totalPers += pers;
+                });
             });
 
             // Update summary cards
@@ -543,16 +570,22 @@
             // First product gets overview, UAT, migration, hypercare
             let isFirst = true;
             allProducts.forEach(product => {
-                const features = featureData[product] || 0;
-                const pers = personalizationData[product] || 0;
                 const weight = getProductWeight(product);
+                let productFeatures = 0;
+                let productPers = 0;
+                
+                // Sum features and personalizations for this product
+                Object.values(productConfig[product]).forEach(module => {
+                    productFeatures += module.features;
+                    productPers += module.personalizations;
+                });
                 
                 if (isFirst) {
                     // Assessment: 32 hrs
                     estimatedHours += 32;
                     // UAT: 88 hrs
                     estimatedHours += 88;
-                    // Migration: ~0.2 * total_pers
+                    // Migration: ~1.2 * total_pers
                     estimatedHours += totalPers * 1.2;
                     // Hypercare: 4 * max(8, totalPers * 0.2)
                     estimatedHours += 4 * Math.max(8, Math.ceil(totalPers * 0.2));
@@ -560,11 +593,11 @@
                 }
                 
                 // Adoption activities for each product
-                estimatedHours += features * 0.4; // Features enablement + verification
+                estimatedHours += productFeatures * 0.4; // Features enablement + verification
                 estimatedHours += 16 * weight; // UI verification with weight
-                estimatedHours += pers * 2; // Personalization enablement
-                if (pers > 0) {
-                    estimatedHours += pers * 0.2; // Additional personalizations
+                estimatedHours += productPers * 2; // Personalization enablement
+                if (productPers > 0) {
+                    estimatedHours += productPers * 0.2; // Additional personalizations
                 }
             });
             
@@ -658,16 +691,29 @@
         }
 
         function generatePythonCode(customerName, config) {
-            let code = `from redwood_module_estimator_colored import RedwoodEstimatorGenerator\n\n`;
+            let code = `from redwood_module_estimator_FIXED import RedwoodEstimatorGenerator\n\n`;
             code += `# Create estimator\n`;
             code += `estimator = RedwoodEstimatorGenerator()\n`;
             code += `estimator.set_customer_name("${customerName}")\n\n`;
-            code += `# Configuration from uploaded files\n`;
+            code += `# Module-level configuration from uploaded files\n`;
             code += `config = {\n`;
             
-            Object.entries(config).forEach(([product, data], index) => {
-                code += `    "${product}": {"features": ${data.features}, "personalizations": ${data.personalizations}}`;
-                if (index < Object.keys(config).length - 1) {
+            const products = Object.keys(config);
+            products.forEach((product, prodIndex) => {
+                code += `    "${product}": {\n`;
+                
+                const modules = Object.keys(config[product]);
+                modules.forEach((module, modIndex) => {
+                    const data = config[product][module];
+                    code += `        "${module}": {"features": ${data.features}, "personalizations": ${data.personalizations}}`;
+                    if (modIndex < modules.length - 1) {
+                        code += ',';
+                    }
+                    code += '\n';
+                });
+                
+                code += `    }`;
+                if (prodIndex < products.length - 1) {
                     code += ',';
                 }
                 code += '\n';
@@ -681,6 +727,24 @@
         }
 
         function showGeneratedCode(code, customerName, config) {
+            // Calculate totals for display
+            let totalFeatures = 0;
+            let totalPers = 0;
+            let moduleBreakdown = '';
+            
+            Object.entries(config).forEach(([product, modules]) => {
+                moduleBreakdown += `<div style="margin-bottom: 15px;">
+                    <strong>${product}:</strong><br>`;
+                
+                Object.entries(modules).forEach(([module, data]) => {
+                    totalFeatures += data.features;
+                    totalPers += data.personalizations;
+                    moduleBreakdown += `<span style="margin-left: 20px;">→ ${module}: ${data.features} features, ${data.personalizations} personalizations</span><br>`;
+                });
+                
+                moduleBreakdown += `</div>`;
+            });
+            
             const modal = document.createElement('div');
             modal.style.cssText = `
                 position: fixed;
@@ -697,27 +761,31 @@
             `;
             
             modal.innerHTML = `
-                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
+                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto;">
                     <h2 style="margin-bottom: 20px; color: #2d3748;">✅ Configuration Generated Successfully!</h2>
                     
                     <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                         <h3 style="color: #2d3748; margin-bottom: 15px;">📊 Summary</h3>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <strong>Customer:</strong> ${customerName}<br>
                                 <strong>Products:</strong> ${Object.keys(config).length}
                             </div>
                             <div>
-                                <strong>Total Features:</strong> ${Object.values(config).reduce((sum, p) => sum + p.features, 0)}<br>
-                                <strong>Total Personalizations:</strong> ${Object.values(config).reduce((sum, p) => sum + p.personalizations, 0)}
+                                <strong>Total Features:</strong> ${totalFeatures}<br>
+                                <strong>Total Personalizations:</strong> ${totalPers}
                             </div>
+                        </div>
+                        <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; max-height: 200px; overflow-y: auto;">
+                            <strong>Module Breakdown:</strong><br><br>
+                            ${moduleBreakdown}
                         </div>
                     </div>
 
                     <h3 style="color: #2d3748; margin-bottom: 10px;">🐍 Python Code</h3>
                     <p style="color: #718096; margin-bottom: 15px;">Copy and run this code to generate your estimation:</p>
                     
-                    <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.6;">
+                    <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; max-height: 300px; overflow-y: auto;">
                         <pre style="margin: 0;">${code}</pre>
                     </div>
 
