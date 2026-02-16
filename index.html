@@ -387,6 +387,28 @@
         let personalizationData = null;
         let productConfig = {};
 
+        // Product weights for complexity-based estimation
+        const PRODUCT_WEIGHTS = {
+            "SCM Common Components": 0.5,
+            "Inventory Management": 1.2,
+            "Maintenance": 1.2,
+            "Manufacturing": 1.5,
+            "Order Management": 1.0,
+            "Collaboration Messaging Framework": 1.0,
+            "Procurement": 1.0,
+            "Product Hub": 1.0,
+            "Purchasing": 1.0,
+            "Quality Management": 1.1,
+            "Self Service Procurement & RSSP": 1.0,
+            "Supply Chain Collaboration": 1.0,
+            "Supply Chain Orchestration": 1.1,
+            "Supply Chain Planning": 1.2
+        };
+
+        function getProductWeight(productName) {
+            return PRODUCT_WEIGHTS[productName] || 1.0;
+        }
+
         function handleFeatureUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -515,8 +537,38 @@
             document.getElementById('featureCount').textContent = totalFeatures;
             document.getElementById('persCount').textContent = totalPers;
             
-            // Rough CSU estimation (simplified)
-            const estimatedCSU = Math.round((totalFeatures * 0.2 + totalPers * 12 + 150) / 2);
+            // More accurate CSU estimation using product weights
+            let estimatedHours = 0;
+            
+            // First product gets overview, UAT, migration, hypercare
+            let isFirst = true;
+            allProducts.forEach(product => {
+                const features = featureData[product] || 0;
+                const pers = personalizationData[product] || 0;
+                const weight = getProductWeight(product);
+                
+                if (isFirst) {
+                    // Assessment: 32 hrs
+                    estimatedHours += 32;
+                    // UAT: 88 hrs
+                    estimatedHours += 88;
+                    // Migration: ~0.2 * total_pers
+                    estimatedHours += totalPers * 1.2;
+                    // Hypercare: 4 * max(8, totalPers * 0.2)
+                    estimatedHours += 4 * Math.max(8, Math.ceil(totalPers * 0.2));
+                    isFirst = false;
+                }
+                
+                // Adoption activities for each product
+                estimatedHours += features * 0.4; // Features enablement + verification
+                estimatedHours += 16 * weight; // UI verification with weight
+                estimatedHours += pers * 2; // Personalization enablement
+                if (pers > 0) {
+                    estimatedHours += pers * 0.2; // Additional personalizations
+                }
+            });
+            
+            const estimatedCSU = Math.round(estimatedHours / 2);
             document.getElementById('estimatedCSU').textContent = estimatedCSU;
 
             // Enable generate button
