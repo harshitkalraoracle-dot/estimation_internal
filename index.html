@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redwood Adoption Estimator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Redwood Estimator Input Generator</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,190 +13,277 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
 
         .header {
-            background: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
             text-align: center;
         }
 
         .header h1 {
-            color: #2d3748;
-            font-size: 32px;
+            font-size: 28px;
             margin-bottom: 10px;
         }
 
         .header p {
-            color: #718096;
-            font-size: 16px;
+            opacity: 0.9;
+            font-size: 14px;
         }
 
-        .main-content {
+        .content {
+            padding: 30px;
+        }
+
+        .upload-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .upload-card {
-            background: white;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
         }
 
-        .upload-card h2 {
-            color: #2d3748;
-            font-size: 20px;
-            margin-bottom: 20px;
+        .upload-card:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-card.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .upload-card input[type="file"] {
+            display: none;
+        }
+
+        .upload-card label {
+            cursor: pointer;
+            display: block;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .upload-card p {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .file-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .file-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .file-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .customer-section {
+            margin-bottom: 30px;
+        }
+
+        .customer-section label {
+            display: block;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .customer-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .customer-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .upload-icon {
-            font-size: 24px;
-        }
-
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
-        }
-
-        .file-input-label {
-            display: block;
-            padding: 15px 20px;
-            background: #667eea;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-            font-weight: 600;
         }
 
-        .file-input-label:hover {
-            background: #5568d3;
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .file-name {
-            padding: 10px;
-            background: #f7fafc;
-            border-radius: 6px;
-            color: #4a5568;
-            font-size: 14px;
-            margin-top: 10px;
-            min-height: 40px;
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .tabs {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
         }
 
-        .preview-section {
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 8px;
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s;
         }
 
-        .preview-section table {
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        .preview-section th {
-            background: #667eea;
-            color: white;
-            padding: 8px;
-            text-align: left;
-            position: sticky;
-            top: 0;
-        }
-
-        .preview-section td {
-            padding: 8px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .preview-section tr:hover {
-            background: #edf2f7;
-        }
-
-        .config-section {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 20px;
         }
 
-        .config-section h2 {
-            color: #2d3748;
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
-
-        .customer-input {
-            width: 100%;
+        .data-table th,
+        .data-table td {
             padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
         }
 
-        .customer-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .data-table th {
+            background: #f8f9ff;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .config-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre;
+            max-height: 500px;
+            overflow-y: auto;
         }
 
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         .summary-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 8px;
             color: white;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
         }
 
-        .summary-card h3 {
+        .summary-card h4 {
             font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 10px;
             opacity: 0.9;
+            margin-bottom: 10px;
         }
 
         .summary-card .value {
@@ -204,191 +291,242 @@
             font-weight: bold;
         }
 
-        .generate-btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
-        }
-
-        .generate-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
-        }
-
-        .generate-btn:disabled {
-            background: #cbd5e0;
-            cursor: not-allowed;
-        }
-
-        .status-message {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 8px;
+        .loading {
+            display: none;
             text-align: center;
-            font-weight: 500;
-            display: none;
+            padding: 40px;
         }
 
-        .status-message.success {
-            background: #c6f6d5;
-            color: #22543d;
+        .loading.active {
             display: block;
         }
 
-        .status-message.error {
-            background: #fed7d7;
-            color: #742a2a;
-            display: block;
-        }
-
-        .status-message.info {
-            background: #bee3f8;
-            color: #2c5282;
-            display: block;
-        }
-
-        .instructions {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .instructions h3 {
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-
-        .instructions ul {
-            color: #4a5568;
-            padding-left: 20px;
-        }
-
-        .instructions li {
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .loading-spinner {
-            display: none;
-            width: 40px;
-            height: 40px;
+        .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #667eea;
             border-radius: 50%;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .alert.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Redwood Adoption Estimator</h1>
-            <p>Upload your feature list and personalization data to generate a comprehensive estimation</p>
+            <h1>🚀 Redwood Estimator Input Generator</h1>
+            <p>Upload your feature list and helper tool output to generate configuration for Redwood Adoption Estimation</p>
         </div>
 
-        <div class="instructions">
-            <h3>📋 Instructions</h3>
-            <ul>
-                <li><strong>Feature Excel:</strong> Upload an Excel file with columns: Product, Module, Features (or S.no, Product, Module, Feature)</li>
-                <li><strong>Personalization Excel:</strong> Upload an Excel file with columns: Product, Personalizations (or Product Group, Product, Personalizations)</li>
-                <li>Enter your customer name</li>
-                <li>Click "Generate Estimation" to download your customized workbook</li>
-            </ul>
-        </div>
+        <div class="content">
+            <div class="alert info">
+                ℹ️ <strong>Instructions:</strong> Upload both Excel files below. The system will automatically parse features from the Redwood Feature List and personalizations from the Helper Tool Output.
+            </div>
 
-        <div class="config-section">
-            <h2>👤 Customer Information</h2>
-            <input type="text" 
-                   id="customerName" 
-                   class="customer-input" 
-                   placeholder="Enter customer name (e.g., Acme Corporation)"
-                   value="Global Enterprises">
-        </div>
-
-        <div class="main-content">
-            <div class="upload-card">
-                <h2><span class="upload-icon">📊</span> Feature List</h2>
-                <div class="file-input-wrapper">
-                    <input type="file" id="featureFile" accept=".xlsx,.xls,.csv" onchange="handleFeatureUpload(event)">
-                    <label for="featureFile" class="file-input-label">
-                        Choose Feature Excel File
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <div class="upload-card" id="featureListCard">
+                    <input type="file" id="featureListFile" accept=".xlsx,.xls">
+                    <label for="featureListFile">
+                        <div class="upload-icon">📋</div>
+                        <h3>Redwood Feature List</h3>
+                        <p>Upload: PATRICK REDWOOD FEATURE LIST_SCM (1).xlsx</p>
+                        <p style="margin-top: 10px; font-size: 12px; color: #999;">Drag & drop or click to browse</p>
                     </label>
+                    <div class="file-status" id="featureListStatus"></div>
                 </div>
-                <div id="featureFileName" class="file-name">No file selected</div>
-                <div id="featurePreview" class="preview-section" style="display:none;"></div>
-            </div>
 
-            <div class="upload-card">
-                <h2><span class="upload-icon">🎨</span> Personalization Data</h2>
-                <div class="file-input-wrapper">
-                    <input type="file" id="persFile" accept=".xlsx,.xls,.csv" onchange="handlePersUpload(event)">
-                    <label for="persFile" class="file-input-label">
-                        Choose Personalization Excel File
+                <div class="upload-card" id="helperToolCard">
+                    <input type="file" id="helperToolFile" accept=".xlsx,.xls">
+                    <label for="helperToolFile">
+                        <div class="upload-icon">🔧</div>
+                        <h3>Helper Tool Output</h3>
+                        <p>Upload: Patrick_Helper Tool Output (2).xlsx</p>
+                        <p style="margin-top: 10px; font-size: 12px; color: #999;">Drag & drop or click to browse</p>
                     </label>
-                </div>
-                <div id="persFileName" class="file-name">No file selected</div>
-                <div id="persPreview" class="preview-section" style="display:none;"></div>
-            </div>
-        </div>
-
-        <div class="config-section">
-            <h2>📈 Configuration Summary</h2>
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <h3>Products</h3>
-                    <div class="value" id="productCount">0</div>
-                </div>
-                <div class="summary-card">
-                    <h3>Total Features</h3>
-                    <div class="value" id="featureCount">0</div>
-                </div>
-                <div class="summary-card">
-                    <h3>Total Personalizations</h3>
-                    <div class="value" id="persCount">0</div>
-                </div>
-                <div class="summary-card">
-                    <h3>Estimated CSU</h3>
-                    <div class="value" id="estimatedCSU">0</div>
+                    <div class="file-status" id="helperToolStatus"></div>
                 </div>
             </div>
 
-            <button id="generateBtn" class="generate-btn" onclick="generateEstimation()" disabled>
-                Generate Estimation Workbook
-            </button>
+            <!-- Customer Name Section -->
+            <div class="customer-section">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" id="customerName" placeholder="Enter customer name (e.g., Patrick, Global Enterprises)" value="Patrick">
+            </div>
 
-            <div class="loading-spinner" id="loadingSpinner"></div>
-            <div id="statusMessage" class="status-message"></div>
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="processBtn" disabled>
+                    🔍 Process Files & Generate Config
+                </button>
+                <button class="btn btn-secondary" id="downloadConfigBtn" disabled>
+                    📥 Download Config (JSON)
+                </button>
+                <button class="btn btn-secondary" id="downloadPythonBtn" disabled>
+                    🐍 Download Python Script
+                </button>
+                <button class="btn btn-primary" id="clearBtn">
+                    🗑️ Clear All
+                </button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing files... Please wait</p>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h4>Total Products</h4>
+                        <div class="value" id="totalProducts">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Total Modules</h4>
+                        <div class="value" id="totalModules">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Total Features</h4>
+                        <div class="value" id="totalFeatures">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Total Personalizations</h4>
+                        <div class="value" id="totalPersonalizations">0</div>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="summary">📊 Summary</button>
+                    <button class="tab" data-tab="config">⚙️ Configuration</button>
+                    <button class="tab" data-tab="features">📋 Features Detail</button>
+                    <button class="tab" data-tab="personalizations">🔧 Personalizations Detail</button>
+                </div>
+
+                <div class="tab-content active" id="summary">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Module</th>
+                                <th>Features</th>
+                                <th>Personalizations</th>
+                                <th>Complexity Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-content" id="config">
+                    <h3 style="margin-bottom: 15px; color: #333;">Generated Configuration (Python Format)</h3>
+                    <div class="config-output" id="configOutput"></div>
+                </div>
+
+                <div class="tab-content" id="features">
+                    <h3 style="margin-bottom: 15px; color: #333;">Features by Product/Module</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Module</th>
+                                <th>Feature Name</th>
+                                <th>Update Version</th>
+                                <th>Mandate Version</th>
+                            </tr>
+                        </thead>
+                        <tbody id="featuresTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-content" id="personalizations">
+                    <h3 style="margin-bottom: 15px; color: #333;">Personalizations by Product/Module</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Module</th>
+                                <th>Page File</th>
+                                <th>Field</th>
+                                <th>Personalization Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="personalizationsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        let featureData = null;
-        let personalizationData = null;
-        let productConfig = {};
+        // Global state
+        let featureData = [];
+        let personalizationData = [];
+        let configData = {};
+        let filesLoaded = {
+            featureList: false,
+            helperTool: false
+        };
 
-        // Product weights for complexity-based estimation
-        const PRODUCT_WEIGHTS = {
+        // Product to Module mapping
+        const productModuleMapping = {
+            'Procurement': ['Purchasing', 'Self Service Procurement', 'Sourcing', 'Procurement Contracts'],
+            'Order Management': ['Order Management', 'Pricing'],
+            'Maintenance': ['Maintenance Management'],
+            'Product Management': ['Product Model'],
+            'Manufacturing': ['Manufacturing'],
+            'Inventory Management': ['Inventory Management'],
+            'Supply Chain Planning': ['Supply Chain Planning']
+        };
+
+        // Complexity weights
+        const complexityWeights = {
             "SCM Common Components": 0.5,
             "Inventory Management": 1.2,
             "Maintenance": 1.2,
@@ -402,437 +540,599 @@
             "Self Service Procurement & RSSP": 1.0,
             "Supply Chain Collaboration": 1.0,
             "Supply Chain Orchestration": 1.1,
-            "Supply Chain Planning": 1.2
+            "Supply Chain Planning": 1.2,
+            "Product Management": 1.0,
+            "Maintenance Management": 1.2,
+            "Product Model": 1.0
         };
 
-        function getProductWeight(productName) {
-            return PRODUCT_WEIGHTS[productName] || 1.0;
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFileUploads();
+            setupTabs();
+            setupButtons();
+        });
+
+        function setupFileUploads() {
+            // Feature List Upload
+            const featureListCard = document.getElementById('featureListCard');
+            const featureListFile = document.getElementById('featureListFile');
+            const featureListStatus = document.getElementById('featureListStatus');
+
+            featureListCard.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                featureListCard.classList.add('dragover');
+            });
+
+            featureListCard.addEventListener('dragleave', () => {
+                featureListCard.classList.remove('dragover');
+            });
+
+            featureListCard.addEventListener('drop', (e) => {
+                e.preventDefault();
+                featureListCard.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    featureListFile.files = files;
+                    processFeatureList(files[0]);
+                }
+            });
+
+            featureListFile.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    processFeatureList(e.target.files[0]);
+                }
+            });
+
+            // Helper Tool Upload
+            const helperToolCard = document.getElementById('helperToolCard');
+            const helperToolFile = document.getElementById('helperToolFile');
+            const helperToolStatus = document.getElementById('helperToolStatus');
+
+            helperToolCard.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                helperToolCard.classList.add('dragover');
+            });
+
+            helperToolCard.addEventListener('dragleave', () => {
+                helperToolCard.classList.remove('dragover');
+            });
+
+            helperToolCard.addEventListener('drop', (e) => {
+                e.preventDefault();
+                helperToolCard.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    helperToolFile.files = files;
+                    processHelperTool(files[0]);
+                }
+            });
+
+            helperToolFile.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    processHelperTool(e.target.files[0]);
+                }
+            });
         }
 
-        function handleFeatureUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function processFeatureList(file) {
+            const status = document.getElementById('featureListStatus');
+            status.className = 'file-status';
+            status.textContent = 'Processing...';
 
-            document.getElementById('featureFileName').textContent = `📄 ${file.name}`;
-            
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     
-                    featureData = processFeatureData(jsonData);
-                    displayFeaturePreview(jsonData.slice(0, 10));
-                    updateConfiguration();
+                    // Parse Sheet1
+                    const sheet = workbook.Sheets['Sheet1'];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
                     
-                    showStatus('Feature file loaded successfully!', 'success');
+                    // Extract features by product/module
+                    featureData = parseFeatureList(jsonData);
+                    
+                    filesLoaded.featureList = true;
+                    status.className = 'file-status success';
+                    status.textContent = `✓ Loaded ${featureData.length} features`;
+                    
+                    updateProcessButton();
                 } catch (error) {
-                    showStatus('Error reading feature file: ' + error.message, 'error');
+                    console.error('Error processing feature list:', error);
+                    status.className = 'file-status error';
+                    status.textContent = '✗ Error: ' + error.message;
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function handlePersUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            document.getElementById('persFileName').textContent = `📄 ${file.name}`;
+        function parseFeatureList(data) {
+            const features = [];
+            let currentProduct = '';
+            let currentModule = '';
             
+            // Skip header rows, start from row with actual data
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                
+                // Check if this is a data row (has product and module)
+                if (row[1] && row[2]) {
+                    const product = row[1]?.toString().trim();
+                    const module = row[2]?.toString().trim();
+                    const featureName = row[3]?.toString().trim();
+                    const updateVersion = row[4]?.toString().trim();
+                    const mandateVersion = row[5]?.toString().trim();
+                    
+                    if (product && module && featureName && !featureName.startsWith('Redwood')) {
+                        continue; // Skip non-feature rows
+                    }
+                    
+                    if (product && module && featureName) {
+                        // Normalize product/module names
+                        const normalizedProduct = normalizeProductName(product);
+                        const normalizedModule = normalizeModuleName(module);
+                        
+                        features.push({
+                            product: normalizedProduct,
+                            module: normalizedModule,
+                            featureName: featureName,
+                            updateVersion: updateVersion || '',
+                            mandateVersion: mandateVersion || ''
+                        });
+                    }
+                }
+            }
+            
+            return features;
+        }
+
+        function processHelperTool(file) {
+            const status = document.getElementById('helperToolStatus');
+            status.className = 'file-status';
+            status.textContent = 'Processing...';
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     
-                    personalizationData = processPersonalizationData(jsonData);
-                    displayPersPreview(jsonData.slice(0, 10));
-                    updateConfiguration();
+                    // Get all sheet names
+                    const sheetNames = workbook.SheetNames;
+                    personalizationData = [];
                     
-                    showStatus('Personalization file loaded successfully!', 'success');
+                    // Parse each sheet
+                    sheetNames.forEach(sheetName => {
+                        const sheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                        const parsed = parseHelperToolSheet(jsonData, sheetName);
+                        personalizationData.push(...parsed);
+                    });
+                    
+                    filesLoaded.helperTool = true;
+                    status.className = 'file-status success';
+                    status.textContent = `✓ Loaded ${personalizationData.length} personalizations`;
+                    
+                    updateProcessButton();
                 } catch (error) {
-                    showStatus('Error reading personalization file: ' + error.message, 'error');
+                    console.error('Error processing helper tool:', error);
+                    status.className = 'file-status error';
+                    status.textContent = '✗ Error: ' + error.message;
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function processFeatureData(data) {
-            const productModuleData = {};
+        function parseHelperToolSheet(data, sheetName) {
+            const personalizations = [];
+            let currentProduct = '';
+            let currentModule = '';
             
-            data.forEach(row => {
-                // Try different column name variations
-                const product = row.Product || row.product || row.PRODUCT;
-                const module = row.Module || row.module || row.MODULE;
-                const feature = row.Feature || row.feature || row.FEATURE || row.Features;
+            // Look for product/module information in the sheet
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
                 
-                if (product) {
-                    if (!productModuleData[product]) {
-                        productModuleData[product] = {};
-                    }
+                // Try to identify product from summary tables
+                if (row[0] && row[1]) {
+                    const cell0 = row[0]?.toString().trim();
+                    const cell1 = row[1]?.toString().trim();
                     
-                    // If module is specified, count features per module
-                    if (module) {
-                        if (!productModuleData[product][module]) {
-                            productModuleData[product][module] = 0;
+                    // Check for product names in first column
+                    if (cell0.includes('Procurement') || cell0.includes('Order Management') || 
+                        cell0.includes('Maintenance') || cell0.includes('Product Management')) {
+                        currentProduct = normalizeProductName(cell0);
+                        
+                        if (cell1 && !cell1.includes('Personalizations')) {
+                            currentModule = normalizeModuleName(cell1);
                         }
-                        productModuleData[product][module] += 1;
-                    } else {
-                        // If no module, use product name as module
-                        if (!productModuleData[product][product]) {
-                            productModuleData[product][product] = 0;
-                        }
-                        productModuleData[product][product] += 1;
                     }
                 }
-            });
-
-            return productModuleData;
-        }
-
-        function processPersonalizationData(data) {
-            const productModuleData = {};
-            
-            data.forEach(row => {
-                // Try different column name variations
-                const product = row.Product || row.product || row.PRODUCT;
-                const module = row.Module || row.module || row.MODULE;
-                const pers = row['Total Number of Personalizations'] || 
-                           row['Total Personalizations'] || 
-                           row.Personalizations || 
-                           row.personalizations || 
-                           row.PERSONALIZATIONS || 0;
                 
-                if (product) {
-                    if (!productModuleData[product]) {
-                        productModuleData[product] = {};
-                    }
+                // Look for personalization details (File, Field, Display Name, Personalization)
+                if (row[0] && row[0]?.toString().includes('.jsff.xml')) {
+                    const fileName = row[0]?.toString().trim();
+                    const field = row[1]?.toString().trim() || '';
+                    const displayName = row[2]?.toString().trim() || '';
+                    const personalization = row[3]?.toString().trim() || '';
                     
-                    // If module is specified, store by module
-                    if (module && module !== product) {
-                        productModuleData[product][module] = parseInt(pers) || 0;
-                    } else {
-                        // If no module, use product name as module
-                        productModuleData[product][product] = parseInt(pers) || 0;
+                    if (personalization && !personalization.includes('Page Composer')) {
+                        personalizations.push({
+                            product: currentProduct,
+                            module: currentModule,
+                            fileName: fileName,
+                            field: field,
+                            displayName: displayName,
+                            personalization: personalization
+                        });
                     }
                 }
-            });
-
-            return productModuleData;
+            }
+            
+            return personalizations;
         }
 
-        function updateConfiguration() {
-            if (!featureData || !personalizationData) return;
-
-            productConfig = {};
-            let totalFeatures = 0;
-            let totalPers = 0;
-
-            // Get all unique products from both datasets
-            const allProducts = new Set([...Object.keys(featureData), ...Object.keys(personalizationData)]);
+        function normalizeProductName(name) {
+            if (!name) return 'Unknown';
+            name = name.trim();
             
-            // Build module-level configuration
-            allProducts.forEach(product => {
-                productConfig[product] = {};
-                
-                // Get all modules for this product from both sources
-                const featureModules = featureData[product] || {};
-                const persModules = personalizationData[product] || {};
-                const allModules = new Set([...Object.keys(featureModules), ...Object.keys(persModules)]);
-                
-                // Combine data for each module
-                allModules.forEach(module => {
-                    const features = featureModules[module] || 0;
-                    const pers = persModules[module] || 0;
+            const mappings = {
+                'Procurement': 'Procurement',
+                'Order Management': 'Order Management',
+                'Maintenance Management': 'Maintenance',
+                'Maintenance': 'Maintenance',
+                'Product Management': 'Product Management',
+                'Product Model': 'Product Management',
+                'Purchasing': 'Procurement',
+                'Self Service Procurement': 'Procurement',
+                'Sourcing': 'Procurement',
+                'Procurement Contracts': 'Procurement',
+                'Pricing': 'Order Management'
+            };
+            
+            for (const [key, value] of Object.entries(mappings)) {
+                if (name.includes(key)) {
+                    return value;
+                }
+            }
+            
+            return name;
+        }
+
+        function normalizeModuleName(name) {
+            if (!name) return 'Unknown';
+            name = name.trim();
+            
+            const mappings = {
+                'Purchasing': 'Purchasing',
+                'Self Service Procurement': 'Self Service Procurement',
+                'Sourcing': 'Sourcing',
+                'Procurement Contracts': 'Procurement Contracts',
+                'Order Management': 'Order Management',
+                'Pricing': 'Pricing',
+                'Maintenance Management': 'Maintenance Management',
+                'Product Model': 'Product Model'
+            };
+            
+            for (const [key, value] of Object.entries(mappings)) {
+                if (name.includes(key)) {
+                    return value;
+                }
+            }
+            
+            return name;
+        }
+
+        function updateProcessButton() {
+            const btn = document.getElementById('processBtn');
+            btn.disabled = !(filesLoaded.featureList && filesLoaded.helperTool);
+        }
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
                     
-                    productConfig[product][module] = {
-                        features: features,
-                        personalizations: pers
-                    };
-                    
-                    totalFeatures += features;
-                    totalPers += pers;
+                    const tabId = tab.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
                 });
             });
-
-            // Update summary cards
-            document.getElementById('productCount').textContent = allProducts.size;
-            document.getElementById('featureCount').textContent = totalFeatures;
-            document.getElementById('persCount').textContent = totalPers;
-            
-            // More accurate CSU estimation using product weights
-            let estimatedHours = 0;
-            
-            // First product gets overview, UAT, migration, hypercare
-            let isFirst = true;
-            allProducts.forEach(product => {
-                const weight = getProductWeight(product);
-                let productFeatures = 0;
-                let productPers = 0;
-                
-                // Sum features and personalizations for this product
-                Object.values(productConfig[product]).forEach(module => {
-                    productFeatures += module.features;
-                    productPers += module.personalizations;
-                });
-                
-                if (isFirst) {
-                    // Assessment: 32 hrs
-                    estimatedHours += 32;
-                    // UAT: 88 hrs
-                    estimatedHours += 88;
-                    // Migration: ~1.2 * total_pers
-                    estimatedHours += totalPers * 1.2;
-                    // Hypercare: 4 * max(8, totalPers * 0.2)
-                    estimatedHours += 4 * Math.max(8, Math.ceil(totalPers * 0.2));
-                    isFirst = false;
-                }
-                
-                // Adoption activities for each product
-                estimatedHours += productFeatures * 0.4; // Features enablement + verification
-                estimatedHours += 16 * weight; // UI verification with weight
-                estimatedHours += productPers * 2; // Personalization enablement
-                if (productPers > 0) {
-                    estimatedHours += productPers * 0.2; // Additional personalizations
-                }
-            });
-            
-            const estimatedCSU = Math.round(estimatedHours / 2);
-            document.getElementById('estimatedCSU').textContent = estimatedCSU;
-
-            // Enable generate button
-            document.getElementById('generateBtn').disabled = false;
         }
 
-        function displayFeaturePreview(data) {
-            const preview = document.getElementById('featurePreview');
-            preview.style.display = 'block';
-            
-            if (data.length === 0) {
-                preview.innerHTML = '<p>No data to preview</p>';
-                return;
-            }
-
-            const headers = Object.keys(data[0]);
-            let html = '<table><thead><tr>';
-            headers.forEach(h => html += `<th>${h}</th>`);
-            html += '</tr></thead><tbody>';
-            
-            data.forEach(row => {
-                html += '<tr>';
-                headers.forEach(h => html += `<td>${row[h] || ''}</td>`);
-                html += '</tr>';
-            });
-            
-            html += '</tbody></table>';
-            preview.innerHTML = html;
+        function setupButtons() {
+            document.getElementById('processBtn').addEventListener('click', processFiles);
+            document.getElementById('downloadConfigBtn').addEventListener('click', downloadConfig);
+            document.getElementById('downloadPythonBtn').addEventListener('click', downloadPythonScript);
+            document.getElementById('clearBtn').addEventListener('click', clearAll);
         }
 
-        function displayPersPreview(data) {
-            const preview = document.getElementById('persPreview');
-            preview.style.display = 'block';
+        function processFiles() {
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('resultsSection');
             
-            if (data.length === 0) {
-                preview.innerHTML = '<p>No data to preview</p>';
-                return;
-            }
-
-            const headers = Object.keys(data[0]);
-            let html = '<table><thead><tr>';
-            headers.forEach(h => html += `<th>${h}</th>`);
-            html += '</tr></thead><tbody>';
+            loading.classList.add('active');
+            results.classList.remove('active');
             
-            data.forEach(row => {
-                html += '<tr>';
-                headers.forEach(h => html += `<td>${row[h] || ''}</td>`);
-                html += '</tr>';
-            });
-            
-            html += '</tbody></table>';
-            preview.innerHTML = html;
-        }
-
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.textContent = message;
-            statusDiv.className = `status-message ${type}`;
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        function generateEstimation() {
-            const customerName = document.getElementById('customerName').value.trim() || 'Global Enterprises';
-            
-            if (Object.keys(productConfig).length === 0) {
-                showStatus('Please upload both feature and personalization files first!', 'error');
-                return;
-            }
-
-            // Show loading
-            document.getElementById('loadingSpinner').style.display = 'block';
-            showStatus('Generating your estimation workbook...', 'info');
-
-            // Generate Python code
-            const pythonCode = generatePythonCode(customerName, productConfig);
-            
-            // Show the code to user
             setTimeout(() => {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                showGeneratedCode(pythonCode, customerName, productConfig);
+                generateConfig();
+                displayResults();
+                loading.classList.remove('active');
+                results.classList.add('active');
+                
+                // Enable download buttons
+                document.getElementById('downloadConfigBtn').disabled = false;
+                document.getElementById('downloadPythonBtn').disabled = false;
             }, 1000);
         }
 
-        function generatePythonCode(customerName, config) {
-            let code = `from redwood_module_estimator_FIXED import RedwoodEstimatorGenerator\n\n`;
-            code += `# Create estimator\n`;
-            code += `estimator = RedwoodEstimatorGenerator()\n`;
-            code += `estimator.set_customer_name("${customerName}")\n\n`;
-            code += `# Module-level configuration from uploaded files\n`;
-            code += `config = {\n`;
+        function generateConfig() {
+            configData = {};
             
-            const products = Object.keys(config);
-            products.forEach((product, prodIndex) => {
-                code += `    "${product}": {\n`;
-                
-                const modules = Object.keys(config[product]);
-                modules.forEach((module, modIndex) => {
-                    const data = config[product][module];
-                    code += `        "${module}": {"features": ${data.features}, "personalizations": ${data.personalizations}}`;
-                    if (modIndex < modules.length - 1) {
-                        code += ',';
-                    }
-                    code += '\n';
-                });
-                
-                code += `    }`;
-                if (prodIndex < products.length - 1) {
-                    code += ',';
+            // Group features by product/module
+            const featureCounts = {};
+            featureData.forEach(feature => {
+                const key = `${feature.product}|${feature.module}`;
+                if (!featureCounts[key]) {
+                    featureCounts[key] = 0;
                 }
-                code += '\n';
+                featureCounts[key]++;
             });
             
-            code += `}\n\n`;
-            code += `estimator.load_from_config(config)\n`;
-            code += `estimator.generate_workbook("${customerName.replace(/[^a-zA-Z0-9]/g, '_')}_Redwood_Estimation.xlsx")\n`;
+            // Group personalizations by product/module
+            const persCounts = {};
+            personalizationData.forEach(pers => {
+                const key = `${pers.product}|${pers.module}`;
+                if (!persCounts[key]) {
+                    persCounts[key] = 0;
+                }
+                persCounts[key]++;
+            });
             
-            return code;
+            // Combine into config
+            const allKeys = new Set([...Object.keys(featureCounts), ...Object.keys(persCounts)]);
+            
+            allKeys.forEach(key => {
+                const [product, module] = key.split('|');
+                
+                if (!configData[product]) {
+                    configData[product] = {};
+                }
+                
+                if (!configData[product][module]) {
+                    configData[product][module] = {
+                        features: 0,
+                        personalizations: 0
+                    };
+                }
+                
+                if (featureCounts[key]) {
+                    configData[product][module].features = featureCounts[key];
+                }
+                
+                if (persCounts[key]) {
+                    configData[product][module].personalizations = persCounts[key];
+                }
+            });
         }
 
-        function showGeneratedCode(code, customerName, config) {
-            // Calculate totals for display
-            let totalFeatures = 0;
-            let totalPers = 0;
-            let moduleBreakdown = '';
+        function displayResults() {
+            // Update summary cards
+            const products = Object.keys(configData);
+            const modules = products.reduce((acc, product) => {
+                return acc + Object.keys(configData[product]).length;
+            }, 0);
             
-            Object.entries(config).forEach(([product, modules]) => {
-                moduleBreakdown += `<div style="margin-bottom: 15px;">
-                    <strong>${product}:</strong><br>`;
+            const totalFeatures = featureData.length;
+            const totalPers = personalizationData.length;
+            
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('totalModules').textContent = modules;
+            document.getElementById('totalFeatures').textContent = totalFeatures;
+            document.getElementById('totalPersonalizations').textContent = totalPers;
+            
+            // Update summary table
+            const summaryBody = document.getElementById('summaryTableBody');
+            summaryBody.innerHTML = '';
+            
+            products.forEach(product => {
+                Object.keys(configData[product]).forEach(module => {
+                    const data = configData[product][module];
+                    const weight = complexityWeights[module] || complexityWeights[product] || 1.0;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${product}</strong></td>
+                        <td>${module}</td>
+                        <td>${data.features}</td>
+                        <td>${data.personalizations}</td>
+                        <td>${weight}x</td>
+                    `;
+                    summaryBody.appendChild(row);
+                });
+            });
+            
+            // Update config output
+            const configOutput = document.getElementById('configOutput');
+            configOutput.textContent = generateConfigString();
+            
+            // Update features table
+            const featuresBody = document.getElementById('featuresTableBody');
+            featuresBody.innerHTML = '';
+            featureData.slice(0, 100).forEach(feature => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${feature.product}</td>
+                    <td>${feature.module}</td>
+                    <td>${feature.featureName}</td>
+                    <td>${feature.updateVersion}</td>
+                    <td>${feature.mandateVersion}</td>
+                `;
+                featuresBody.appendChild(row);
+            });
+            
+            if (featureData.length > 100) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="5" style="text-align: center; color: #666;">... and ${featureData.length - 100} more features</td>`;
+                featuresBody.appendChild(row);
+            }
+            
+            // Update personalizations table
+            const persBody = document.getElementById('personalizationsTableBody');
+            persBody.innerHTML = '';
+            personalizationData.slice(0, 100).forEach(pers => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pers.product}</td>
+                    <td>${pers.module}</td>
+                    <td>${pers.fileName}</td>
+                    <td>${pers.field}</td>
+                    <td>${pers.personalization}</td>
+                `;
+                persBody.appendChild(row);
+            });
+            
+            if (personalizationData.length > 100) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="5" style="text-align: center; color: #666;">... and ${personalizationData.length - 100} more personalizations</td>`;
+                persBody.appendChild(row);
+            }
+        }
+
+        function generateConfigString() {
+            const customerName = document.getElementById('customerName').value || 'Patrick';
+            
+            let config = `from redwood_module_estimator_FIXED import RedwoodEstimatorGenerator
+
+# Create estimator
+estimator = RedwoodEstimatorGenerator()
+estimator.set_customer_name("${customerName}")
+
+# Module-level configuration from uploaded files
+config = {
+`;
+            
+            Object.keys(configData).forEach((product, productIndex) => {
+                config += `    "${product}": {\n`;
                 
-                Object.entries(modules).forEach(([module, data]) => {
-                    totalFeatures += data.features;
-                    totalPers += data.personalizations;
-                    moduleBreakdown += `<span style="margin-left: 20px;">→ ${module}: ${data.features} features, ${data.personalizations} personalizations</span><br>`;
+                const modules = Object.keys(configData[product]);
+                modules.forEach((module, moduleIndex) => {
+                    const data = configData[product][module];
+                    const comma = (productIndex < Object.keys(configData).length - 1 || moduleIndex < modules.length - 1) ? ',' : '';
+                    config += `        "${module}": {"features": ${data.features}, "personalizations": ${data.personalizations}}${comma}\n`;
                 });
                 
-                moduleBreakdown += `</div>`;
+                config += `    }${productIndex < Object.keys(configData).length - 1 ? ',' : ''}\n`;
             });
             
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-                padding: 20px;
-            `;
-            
-            modal.innerHTML = `
-                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto;">
-                    <h2 style="margin-bottom: 20px; color: #2d3748;">✅ Configuration Generated Successfully!</h2>
-                    
-                    <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                        <h3 style="color: #2d3748; margin-bottom: 15px;">📊 Summary</h3>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
-                            <div>
-                                <strong>Customer:</strong> ${customerName}<br>
-                                <strong>Products:</strong> ${Object.keys(config).length}
-                            </div>
-                            <div>
-                                <strong>Total Features:</strong> ${totalFeatures}<br>
-                                <strong>Total Personalizations:</strong> ${totalPers}
-                            </div>
-                        </div>
-                        <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; max-height: 200px; overflow-y: auto;">
-                            <strong>Module Breakdown:</strong><br><br>
-                            ${moduleBreakdown}
-                        </div>
-                    </div>
+            config += `}
 
-                    <h3 style="color: #2d3748; margin-bottom: 10px;">🐍 Python Code</h3>
-                    <p style="color: #718096; margin-bottom: 15px;">Copy and run this code to generate your estimation:</p>
-                    
-                    <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; max-height: 300px; overflow-y: auto;">
-                        <pre style="margin: 0;">${code}</pre>
-                    </div>
-
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="copyCode('${btoa(code)}')" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                            📋 Copy Code
-                        </button>
-                        <button onclick="downloadConfig('${btoa(JSON.stringify({customerName, config}))}')" style="flex: 1; padding: 12px; background: #48bb78; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                            💾 Download Config
-                        </button>
-                        <button onclick="closeModal()" style="flex: 1; padding: 12px; background: #cbd5e0; color: #2d3748; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                            ✖️ Close
-                        </button>
-                    </div>
-                </div>
-            `;
+estimator.load_from_config(config)
+estimator.generate_workbook("${customerName.replace(/\s+/g, '_')}_Redwood_Estimation.xlsx")
+`;
             
-            document.body.appendChild(modal);
-            window.currentModal = modal;
+            return config;
         }
 
-        function copyCode(encodedCode) {
-            const code = atob(encodedCode);
-            navigator.clipboard.writeText(code).then(() => {
-                showStatus('Code copied to clipboard!', 'success');
-            });
-        }
-
-        function downloadConfig(encodedConfig) {
-            const configData = JSON.parse(atob(encodedConfig));
-            const code = generatePythonCode(configData.customerName, configData.config);
-            
-            const blob = new Blob([code], { type: 'text/plain' });
+        function downloadConfig() {
+            const config = generateConfigString();
+            const blob = new Blob([config], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${configData.customerName.replace(/[^a-zA-Z0-9]/g, '_')}_estimation_script.py`;
+            a.download = 'redwood_config.py';
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            
-            showStatus('Python script downloaded!', 'success');
         }
 
-        function closeModal() {
-            if (window.currentModal) {
-                window.currentModal.remove();
-            }
+        function downloadPythonScript() {
+            const customerName = document.getElementById('customerName').value || 'Patrick';
+            
+            let script = `#!/usr/bin/env python3
+"""
+Redwood Estimator Script
+Generated automatically from uploaded files
+Customer: ${customerName}
+"""
+
+from redwood_module_estimator_FIXED import RedwoodEstimatorGenerator
+
+# Create estimator
+estimator = RedwoodEstimatorGenerator()
+estimator.set_customer_name("${customerName}")
+
+# Module-level configuration from uploaded files
+config = {
+`;
+            
+            Object.keys(configData).forEach((product, productIndex) => {
+                script += `    "${product}": {\n`;
+                
+                const modules = Object.keys(configData[product]);
+                modules.forEach((module, moduleIndex) => {
+                    const data = configData[product][module];
+                    const comma = (productIndex < Object.keys(configData).length - 1 || moduleIndex < modules.length - 1) ? ',' : '';
+                    script += `        "${module}": {"features": ${data.features}, "personalizations": ${data.personalizations}}${comma}\n`;
+                });
+                
+                script += `    }${productIndex < Object.keys(configData).length - 1 ? ',' : ''}\n`;
+            });
+            
+            script += `}
+
+estimator.load_from_config(config)
+estimator.generate_workbook("${customerName.replace(/\s+/g, '_')}_Redwood_Estimation.xlsx")
+
+print("✓ Estimation workbook generated successfully!")
+`;
+            
+            const blob = new Blob([script], { type: 'text/x-python' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'generate_redwood_estimation.py';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAll() {
+            // Reset state
+            featureData = [];
+            personalizationData = [];
+            configData = {};
+            filesLoaded = {
+                featureList: false,
+                helperTool: false
+            };
+            
+            // Reset file inputs
+            document.getElementById('featureListFile').value = '';
+            document.getElementById('helperToolFile').value = '';
+            
+            // Reset status
+            document.getElementById('featureListStatus').className = 'file-status';
+            document.getElementById('featureListStatus').textContent = '';
+            document.getElementById('helperToolStatus').className = 'file-status';
+            document.getElementById('helperToolStatus').textContent = '';
+            
+            // Reset buttons
+            updateProcessButton();
+            document.getElementById('downloadConfigBtn').disabled = true;
+            document.getElementById('downloadPythonBtn').disabled = true;
+            
+            // Hide results
+            document.getElementById('resultsSection').classList.remove('active');
+            
+            // Reset customer name
+            document.getElementById('customerName').value = 'Patrick';
         }
     </script>
 </body>
