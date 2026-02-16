@@ -1,1143 +1,1246 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redwood Estimator Input Generator</title>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .upload-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .upload-card {
-            border: 2px dashed #667eea;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-            background: #f8f9ff;
-        }
-
-        .upload-card:hover {
-            border-color: #764ba2;
-            background: #f0f2ff;
-        }
-
-        .upload-card.dragover {
-            border-color: #764ba2;
-            background: #e8ebff;
-            transform: scale(1.02);
-        }
-
-        .upload-card input[type="file"] {
-            display: none;
-        }
-
-        .upload-card label {
-            cursor: pointer;
-            display: block;
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .upload-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .upload-card p {
-            color: #666;
-            font-size: 13px;
-        }
-
-        .file-status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 13px;
-        }
-
-        .file-status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .file-status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .customer-section {
-            margin-bottom: 30px;
-        }
-
-        .customer-section label {
-            display: block;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .customer-section input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        .customer-section input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .results-section {
-            display: none;
-        }
-
-        .results-section.active {
-            display: block;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 8px 8px 0 0;
-            cursor: pointer;
-            font-weight: bold;
-            color: #666;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .data-table th {
-            background: #f8f9ff;
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        .data-table tr:hover {
-            background: #f8f9ff;
-        }
-
-        .config-output {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 20px;
-            border-radius: 8px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
-            overflow-x: auto;
-            white-space: pre;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .summary-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .summary-card h4 {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 10px;
-        }
-
-        .summary-card .value {
-            font-size: 32px;
-            font-weight: bold;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-            display: block;
-        }
-
-        .alert.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-            display: block;
-        }
-
-        .preloaded-data {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .preloaded-data h4 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .preloaded-data ul {
-            margin-left: 20px;
-            color: #856404;
-        }
-
-        @media (max-width: 768px) {
-            .upload-section {
-                grid-template-columns: 1fr;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Redwood Adoption Estimator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Oracle Typography - System fonts matching Oracle's design */
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+background: #F5F7FA; /* Oracle light grey background */
+margin: 0;
+color: #252525; /* Oracle dark grey text */
+}
+:root {
+/* Strict Oracle Grey & White Palette */
+--oracle-black: #000000; /* Pure black for header */
+--oracle-dark-grey: #252525; /* Dark grey for text */
+--oracle-medium-grey: #666666; /* Medium grey */
+--oracle-light-grey: #BDBDBD; /* Light grey borders */
+--oracle-very-light-grey: #E0E0E0; /* Very light grey */
+--oracle-background-grey: #F5F7FA; /* Background grey */
+--oracle-white: #FFFFFF; /* Pure white */
+--oracle-selected-green: #E8F5E9; /* Very subtle green for selected */
+--oracle-unselected-red: #FFEBEE; /* Very subtle red for unselected */
+/* Excel-like colors */
+--excel-header-blue: #5B9BD5;
+--excel-section-grey: #A5A5A5;
+--excel-total-green: #C6EFCE;
+--excel-grandtotal-green: #9CC2E5;
+--excel-alt-row: #DDEBF7;
+}
+/* Header with Oracle Jet banner below it */
+.header {
+background: var(--oracle-black); /* Black upper strip */
+color: var(--oracle-white); /* White text */
+padding: 16px 20px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+position: relative;
+}
+.header h2 {
+margin: 0;
+font-weight: 600;
+letter-spacing: 0.5px;
+font-size: 20px;
+}
+/* Oracle Jet banner - using your image */
+.oracle-jet-banner {
+height: 8px;
+background: url('oracle-jet-banner.png') no-repeat center center;
+background-size: 100% 100%;
+width: 100%;
+}
+.user-badge {
+background: rgba(255, 255, 255, 0.15);
+padding: 6px 12px;
+border-radius: 20px;
+font-size: 14px;
+border: 1px solid rgba(255, 255, 255, 0.3);
+color: var(--oracle-white);
+}
+.login-container {
+max-width: 400px;
+margin: 100px auto;
+padding: 32px;
+background: var(--oracle-white);
+border-radius: 8px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+border: 1px solid var(--oracle-light-grey);
+}
+.login-container h3 {
+margin-top: 0;
+color: var(--oracle-dark-grey);
+font-weight: 600;
+font-size: 20px;
+}
+.login-container input {
+width: 100%;
+padding: 12px;
+margin: 8px 0;
+border: 1px solid var(--oracle-light-grey);
+border-radius: 4px;
+box-sizing: border-box;
+font-family: inherit;
+transition: border-color 0.2s;
+}
+.login-container input:focus {
+outline: none;
+border-color: var(--oracle-black);
+box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+.login-container button {
+width: 100%;
+padding: 12px;
+margin: 8px 0;
+border: 1px solid var(--oracle-dark-grey);
+border-radius: 4px;
+cursor: pointer;
+font-size: 16px;
+font-weight: 600;
+font-family: inherit;
+transition: all 0.2s;
+color: var(--oracle-white);
+background: var(--oracle-dark-grey);
+}
+.login-container button:hover {
+background: #1A1A1A;
+transform: translateY(-1px);
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.btn-user {
+background: var(--oracle-dark-grey);
+color: var(--oracle-white);
+border: 1px solid var(--oracle-dark-grey);
+}
+.btn-admin {
+background: var(--oracle-white);
+color: var(--oracle-dark-grey);
+border: 1px solid var(--oracle-dark-grey);
+}
+.btn-admin:hover {
+background: var(--oracle-very-light-grey);
+}
+.btn-logout {
+background: var(--oracle-white);
+color: var(--oracle-dark-grey);
+padding: 8px 16px;
+border: 1px solid var(--oracle-dark-grey);
+border-radius: 4px;
+cursor: pointer;
+font-weight: 600;
+transition: all 0.2s;
+}
+.btn-logout:hover {
+background: var(--oracle-very-light-grey);
+}
+.dashboard {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+gap: 12px;
+padding: 16px;
+background: var(--oracle-white);
+border: 1px solid var(--oracle-light-grey);
+border-radius: 8px;
+margin: 16px;
+}
+.dashboard input {
+width: 100%;
+padding: 8px;
+border: 1px solid var(--oracle-light-grey);
+border-radius: 4px;
+box-sizing: border-box;
+background: var(--oracle-background-grey);
+font-family: inherit;
+color: var(--oracle-dark-grey);
+}
+.tabs {
+display: flex;
+background: var(--oracle-white);
+padding: 0 20px;
+border-bottom: 2px solid var(--oracle-light-grey);
+flex-wrap: wrap;
+margin: 0 16px;
+}
+.tab {
+padding: 12px 20px;
+cursor: pointer;
+font-weight: 600;
+user-select: none;
+color: var(--oracle-medium-grey);
+border-bottom: 2px solid transparent;
+transition: all 0.2s;
+font-size: 15px;
+}
+.tab:hover {
+color: var(--oracle-dark-grey);
+background: var(--oracle-very-light-grey);
+}
+.tab.active {
+color: var(--oracle-black);
+border-bottom: 3px solid var(--oracle-black);
+background: var(--oracle-very-light-grey);
+}
+.tab-content {
+display: none;
+padding: 20px;
+margin: 0 16px;
+}
+.tab-content.active {
+display: block;
+}
+/* Product section headers - black background with white text */
+.product-header {
+padding: 12px 16px;
+font-weight: 600;
+background: var(--oracle-black);
+color: var(--oracle-white);
+border-bottom: 1px solid var(--oracle-light-grey);
+letter-spacing: 0.3px;
+font-size: 15px;
+}
+/* Regular section headers - Excel-like grey */
+.section-header {
+padding: 12px 16px;
+font-weight: 600;
+background: var(--excel-section-grey);
+color: var(--oracle-white);
+border-bottom: 1px solid var(--oracle-light-grey);
+letter-spacing: 0.3px;
+font-size: 15px;
+}
+.section {
+margin-bottom: 24px;
+border-radius: 8px;
+overflow: hidden;
+box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+background: var(--oracle-white);
+border: 1px solid var(--oracle-light-grey);
+}
+table {
+width: 100%;
+border-collapse: collapse;
+}
+th, td {
+padding: 10px 8px;
+border: 1px solid var(--oracle-light-grey);
+text-align: center;
+}
+th {
+background: var(--excel-header-blue);
+font-weight: 600;
+color: var(--oracle-white);
+text-transform: uppercase;
+font-size: 12px;
+letter-spacing: 0.5px;
+}
+td.task-name {
+text-align: left;
+font-weight: 500;
+color: var(--oracle-dark-grey);
+}
+td.task-details {
+text-align: left;
+font-size: 13px;
+color: var(--oracle-medium-grey);
+}
+input[type="number"] {
+width: 80px;
+padding: 6px;
+text-align: center;
+border: 1px solid var(--oracle-light-grey);
+border-radius: 4px;
+font-family: inherit;
+transition: border-color 0.2s;
+color: var(--oracle-dark-grey);
+}
+input[type="number"]:focus {
+outline: none;
+border-color: var(--oracle-black);
+}
+button.download {
+margin: 24px auto;
+display: block;
+padding: 12px 28px;
+background: var(--oracle-white);
+color: var(--oracle-dark-grey);
+border: 1px solid var(--oracle-dark-grey);
+border-radius: 4px;
+font-size: 16px;
+cursor: pointer;
+font-weight: 600;
+font-family: inherit;
+transition: all 0.2s;
+}
+button.download:hover {
+background: var(--oracle-very-light-grey);
+transform: translateY(-2px);
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.admin-controls {
+background: var(--oracle-background-grey);
+padding: 20px;
+margin-bottom: 20px;
+border-radius: 8px;
+border: 2px solid var(--oracle-light-grey);
+}
+.admin-controls h3 {
+margin-top: 0;
+color: var(--oracle-dark-grey);
+font-weight: 600;
+}
+.file-input-wrapper {
+margin: 16px 0;
+}
+.file-input-wrapper input[type="file"] {
+padding: 8px;
+border: 1px solid var(--oracle-light-grey);
+border-radius: 4px;
+width: 100%;
+box-sizing: border-box;
+font-family: inherit;
+}
+.btn-upload {
+background: var(--oracle-white);
+color: var(--oracle-dark-grey);
+padding: 10px 20px;
+border: 1px solid var(--oracle-dark-grey);
+border-radius: 4px;
+cursor: pointer;
+font-weight: 600;
+margin-top: 10px;
+font-family: inherit;
+transition: all 0.2s;
+}
+.btn-upload:hover {
+background: var(--oracle-very-light-grey);
+}
+.module-toggle-btn {
+padding: 6px 16px;
+border: 1px solid var(--oracle-light-grey);
+border-radius: 20px;
+cursor: pointer;
+font-weight: 600;
+transition: all 0.2s;
+font-size: 14px;
+font-family: inherit;
+color: var(--oracle-dark-grey);
+}
+.module-toggle-btn.selected {
+background: var(--oracle-selected-green);
+color: var(--oracle-dark-grey);
+border: 1px solid var(--oracle-light-grey);
+font-weight: 700;
+}
+.module-toggle-btn.unselected {
+background: var(--oracle-unselected-red);
+color: var(--oracle-dark-grey);
+border: 1px solid var(--oracle-light-grey);
+font-weight: 700;
+}
+.hidden {
+display: none;
+}
+.error-message {
+color: var(--oracle-dark-grey);
+font-size: 14px;
+margin: 10px 0;
+text-align: center;
+background: var(--oracle-background-grey);
+padding: 8px;
+border-radius: 4px;
+border-left: 3px solid var(--oracle-medium-grey);
+font-weight: 500;
+}
+tr.section-total {
+background: var(--excel-total-green);
+font-weight: 600;
+color: var(--oracle-dark-grey);
+}
+tr.grand-total {
+background: var(--excel-grandtotal-green);
+font-weight: 700;
+color: var(--oracle-dark-grey);
+font-size: 16px;
+}
+/* Alternating row colors */
+tbody tr:nth-child(even) {
+background-color: var(--excel-alt-row);
+}
+/* Additional Oracle styling improvements */
+label {
+font-weight: 500;
+color: var(--oracle-dark-grey);
+display: block;
+margin-bottom: 4px;
+font-size: 14px;
+}
+input, select, textarea, button {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+/* Focus states for accessibility */
+button:focus, input:focus, .tab:focus {
+outline: 2px solid var(--oracle-black);
+outline-offset: 2px;
+}
+/* Hover effects for better UX */
+.module-toggle-btn:hover {
+transform: scale(1.05);
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+border-color: var(--oracle-dark-grey);
+}
+/* Responsive improvements */
+@media (max-width: 768px) {
+.dashboard {
+grid-template-columns: 1fr;
+}
+.tabs {
+flex-direction: column;
+align-items: flex-start;
+}
+.tab {
+width: 100%;
+border-radius: 4px;
+margin-bottom: 4px;
+}
+}
+/* Subtle icons with grey */
+.download-icon {
+color: var(--oracle-medium-grey);
+margin-right: 8px;
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 Redwood Estimator Input Generator</h1>
-            <p>Upload your feature list and helper tool output to generate configuration for Redwood Adoption Estimation</p>
-        </div>
+<!-- Rest of the HTML remains the same -->
+<div id="loginScreen" class="login-container">
+<h3>Redwood Adoption Estimator</h3>
+<p>Choose your access level:</p>
+<button class="btn-user" onclick="loginAsUser()">Continue as User</button>
+<button class="btn-admin" onclick="showAdminLogin()">Admin Login</button>
+<div id="adminLoginForm" class="hidden" style="margin-top:20px;">
+<input type="password" id="adminPassword" placeholder="Enter admin password" onkeypress="if(event.key==='Enter')loginAsAdmin()">
+<button class="btn-admin" onclick="loginAsAdmin()">Login as Admin</button>
+<div id="loginError" class="error-message hidden">Incorrect password. Please try again.</div>
+</div>
+</div>
+<div id="appScreen" class="hidden">
+<div class="header">
+<h2>Redwood Adoption Estimator</h2>
+<div style="display:flex;gap:12px;align-items:center;">
+<span class="user-badge" id="userBadge"></span>
+<button class="btn-logout" onclick="logout()">Logout</button>
+</div>
+</div>
+<!-- Oracle Jet banner below the header -->
+<div class="oracle-jet-banner"></div>
+<div class="dashboard">
+<div>
+<label>Customer Name</label>
+<input id="customerName" value="Global Enterprises"/>
+</div>
+<div>
+<label>Modules Selected</label>
+<input id="moduleCount" readonly/>
+</div>
+<div>
+<label>Products Selected</label>
+<input id="productCount" readonly/>
+</div>
+</div>
+<div class="tabs" id="tabsContainer"></div>
+<div id="selector" class="tab-content">
+<div id="productContainer"></div>
+</div>
+<div id="estimation" class="tab-content">
+<div id="formContainer"></div>
+<div style="text-align:center;margin:24px 0;">
+<button class="download" onclick="downloadEstimation()" style="display:inline-block;margin:0 10px;">Download Excel Report</button>
+<button class="download" onclick="downloadJSON()" style="display:inline-block;margin:0 10px;">Download JSON</button>
+</div>
+</div>
+<div id="admin" class="tab-content">
+<div class="admin-controls">
+<h3>Configuration Management</h3>
+<div style="margin:20px 0;padding:15px;background:var(--oracle-white);border-radius:8px;border:1px solid var(--oracle-light-grey);">
+<h4 style="margin-top:0;color:var(--oracle-dark-grey);">JSON Configuration</h4>
+<p><strong>Upload JSON Configuration:</strong> Upload a JSON file to restore complete application state including selected modules, personalizations, and all configuration values.</p>
+<div class="file-input-wrapper">
+<input type="file" id="jsonFile" accept=".json">
+<button class="btn-upload" onclick="uploadJSON()">Upload JSON & Apply</button>
+</div>
+<button class="download" onclick="downloadJSON()" style="display:inline-block;margin:10px 0;">Download Current Config as JSON</button>
+</div>
+</div>
+<h3>Current Configuration (Editable)</h3>
+<div id="adminContainer"></div>
+<button class="download" onclick="downloadEstimation()">Download Excel Report</button>
+</div>
+</div>
+<!-- Rest of the script remains the same -->
+<script>
+const ADMIN_PASSWORD = "admin123";
+let currentUser = null;
+let personalizationCounts = {};
+let selectedModules = new Set();
 
-        <div class="content">
-            <div class="alert info">
-                ℹ️ <strong>Instructions:</strong> Upload both Excel files below. The system will automatically parse features from the Redwood Feature List and personalizations from the Helper Tool Output.
-            </div>
+// Updated Products List based on Input Data
+const PRODUCTS = [
+  { name: "Procurement", weight: 1.0 },
+  { name: "Order Management", weight: 1.0 },
+  { name: "Product Hub", weight: 1.0 }
+];
 
-            <!-- Preloaded Data Info -->
-            <div class="preloaded-data">
-                <h4>📊 Expected Data Structure (Based on Patrick's Files):</h4>
-                <ul>
-                    <li><strong>Procurement → Purchasing:</strong> 30 features, 20 personalizations</li>
-                    <li><strong>Procurement → Self Service Procurement:</strong> 0 features, 23 personalizations</li>
-                    <li><strong>Procurement → Sourcing:</strong> 0 features, 12 personalizations</li>
-                    <li><strong>Procurement → Procurement Contracts:</strong> 3 features, 0 personalizations</li>
-                    <li><strong>Order Management → Order Management:</strong> 15 features, 22 personalizations</li>
-                    <li><strong>Order Management → Pricing:</strong> 4 features, 0 personalizations</li>
-                    <li><strong>Maintenance → Maintenance Management:</strong> 0 features, 4 personalizations</li>
-                    <li><strong>Product Management → Product Model:</strong> 0 features, 2 personalizations</li>
-                </ul>
-            </div>
+// Updated Modules List based on Input Data
+const MODULES = [
+  { name: "Purchasing", count: 30, product: "Procurement" },
+  { name: "Procurement Contracts", count: 3, product: "Procurement" },
+  { name: "Self Service Procurement", count: 0, product: "Procurement" },
+  { name: "Sourcing", count: 0, product: "Procurement" },
+  { name: "Order Management", count: 15, product: "Order Management" },
+  { name: "Pricing", count: 4, product: "Order Management" },
+  { name: "Product Model", count: 0, product: "Product Hub" }
+];
 
-            <!-- File Upload Section -->
-            <div class="upload-section">
-                <div class="upload-card" id="featureListCard">
-                    <input type="file" id="featureListFile" accept=".xlsx,.xls">
-                    <label for="featureListFile">
-                        <div class="upload-icon">📋</div>
-                        <h3>Redwood Feature List</h3>
-                        <p>Upload: PATRICK REDWOOD FEATURE LIST_SCM (1).xlsx</p>
-                        <p style="margin-top: 10px; font-size: 12px; color: #999;">Drag & drop or click to browse</p>
-                    </label>
-                    <div class="file-status" id="featureListStatus"></div>
-                </div>
+// Pre-calculated Personalizations based on Input File (Only for modules with features)
+const INPUT_PERSONALIZATIONS = {
+  "Procurement": { "Purchasing": 20, "Procurement Contracts": 0, "Self Service Procurement": 0, "Sourcing": 0 },
+  "Order Management": { "Order Management": 22, "Pricing": 0 },
+  "Product Hub": { "Product Model": 0 }
+};
 
-                <div class="upload-card" id="helperToolCard">
-                    <input type="file" id="helperToolFile" accept=".xlsx,.xls">
-                    <label for="helperToolFile">
-                        <div class="upload-icon">🔧</div>
-                        <h3>Helper Tool Output</h3>
-                        <p>Upload: Patrick_Helper Tool Output (2).xlsx</p>
-                        <p style="margin-top: 10px; font-size: 12px; color: #999;">Drag & drop or click to browse</p>
-                    </label>
-                    <div class="file-status" id="helperToolStatus"></div>
-                </div>
-            </div>
+const DEFAULT_OVERVIEW = [
+  { name:"Service Kick-off", detail:"Validate the filled-in Redwood Pre-Adoption File and the Helper Tool output Extract", nonProd:0, prod:0, qty:1 },
+  { name:"Service Kick-off", detail:"Perform Impact Assessment for Redwood and Customer's Personalization", nonProd:0, prod:0, qty:1 },
+  { name:"Discussion", detail:"Introduction of Redwood Features along with redwood roadmap of Supply Chain. Prepare Inventory of assets impacted , Report and the Workplan and Review Workplan with the Customer", nonProd:8, prod:0, qty:1 },
+  { name:"Documentation", detail:"This covers varous documentation like CWB's and Adoption Document", nonProd:16, prod:0, qty:1 },
+  { name:"Demo / Review", detail:"Walk Through of Applicable Feature Before and After Adoption along with few transactions in the system.", nonProd:8, prod:0, qty:1 }
+];
 
-            <!-- Customer Name Section -->
-            <div class="customer-section">
-                <label for="customerName">Customer Name:</label>
-                <input type="text" id="customerName" placeholder="Enter customer name (e.g., Patrick, Global Enterprises)" value="Patrick">
-            </div>
+const DEFAULT_HYPERCARE = [
+  { name:"Production Migration", detail:"Per personalization time / Env", nonProd:0, prod:0.5, qty:0 },
+  { name:"Issue Resolution", detail:"This can Vary with reported issue / Env", nonProd:0, prod:4, qty:0 }
+];
 
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-primary" id="processBtn" disabled>
-                    🔍 Process Files & Generate Config
-                </button>
-                <button class="btn btn-secondary" id="downloadConfigBtn" disabled>
-                    📥 Download Config (Python)
-                </button>
-                <button class="btn btn-secondary" id="downloadPythonBtn" disabled>
-                    🐍 Download Python Script
-                </button>
-                <button class="btn btn-primary" id="clearBtn">
-                    🗑️ Clear All
-                </button>
-            </div>
+let CONFIG = {
+overview: JSON.parse(JSON.stringify(DEFAULT_OVERVIEW)),
+products: {},
+hypercare: JSON.parse(JSON.stringify(DEFAULT_HYPERCARE))
+};
 
-            <!-- Loading Indicator -->
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Processing files... Please wait</p>
-            </div>
+function showAdminLogin() {
+document.getElementById('adminLoginForm').classList.remove('hidden');
+}
+function loginAsUser() {
+currentUser = 'user';
+initializeApp();
+}
+function loginAsAdmin() {
+const pwd = document.getElementById('adminPassword').value;
+const errorDiv = document.getElementById('loginError');
+if (pwd === ADMIN_PASSWORD) {
+currentUser = 'admin';
+errorDiv.classList.add('hidden');
+initializeApp();
+} else {
+errorDiv.classList.remove('hidden');
+}
+}
+function logout() {
+currentUser = null;
+document.getElementById('loginScreen').classList.remove('hidden');
+document.getElementById('appScreen').classList.add('hidden');
+document.getElementById('adminPassword').value = '';
+document.getElementById('adminLoginForm').classList.add('hidden');
+document.getElementById('loginError').classList.add('hidden');
+}
+function initializeApp() {
+document.getElementById('loginScreen').classList.add('hidden');
+document.getElementById('appScreen').classList.remove('hidden');
+if (currentUser === 'admin') {
+document.getElementById('userBadge').textContent = 'Admin';
+renderTabs(['selector', 'estimation', 'admin']);
+} else {
+document.getElementById('userBadge').textContent = 'User';
+renderTabs(['selector', 'estimation']);
+}
+// Set up event delegation for editable fields (only once)
+if (!window.editableFieldsListenerAttached) {
+document.addEventListener('input', function(e) {
+if (e.target.classList.contains('editable-field')) {
+const sectionKey = e.target.getAttribute('data-section');
+const index = parseInt(e.target.getAttribute('data-index'));
+const field = e.target.getAttribute('data-field');
+const value = e.target.value;
+updateTask(sectionKey, index, field, value);
+}
+});
+window.editableFieldsListenerAttached = true;
+}
 
-            <!-- Results Section -->
-            <div class="results-section" id="resultsSection">
-                <div class="summary-cards">
-                    <div class="summary-card">
-                        <h4>Total Products</h4>
-                        <div class="value" id="totalProducts">0</div>
-                    </div>
-                    <div class="summary-card">
-                        <h4>Total Modules</h4>
-                        <div class="value" id="totalModules">0</div>
-                    </div>
-                    <div class="summary-card">
-                        <h4>Total Features</h4>
-                        <div class="value" id="totalFeatures">0</div>
-                    </div>
-                    <div class="summary-card">
-                        <h4>Total Personalizations</h4>
-                        <div class="value" id="totalPersonalizations">0</div>
-                    </div>
-                </div>
-
-                <div class="tabs">
-                    <button class="tab active" data-tab="summary">📊 Summary</button>
-                    <button class="tab" data-tab="config">⚙️ Configuration</button>
-                    <button class="tab" data-tab="features">📋 Features Detail</button>
-                    <button class="tab" data-tab="personalizations">🔧 Personalizations Detail</button>
-                </div>
-
-                <div class="tab-content active" id="summary">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Product Group</th>
-                                <th>Module</th>
-                                <th>Features</th>
-                                <th>Personalizations</th>
-                                <th>Complexity Weight</th>
-                            </tr>
-                        </thead>
-                        <tbody id="summaryTableBody">
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="tab-content" id="config">
-                    <h3 style="margin-bottom: 15px; color: #333;">Generated Configuration (Python Format)</h3>
-                    <div class="config-output" id="configOutput"></div>
-                </div>
-
-                <div class="tab-content" id="features">
-                    <h3 style="margin-bottom: 15px; color: #333;">Features by Product/Module</h3>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Module</th>
-                                <th>Feature Name</th>
-                                <th>Update Version</th>
-                                <th>Mandate Version</th>
-                            </tr>
-                        </thead>
-                        <tbody id="featuresTableBody">
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="tab-content" id="personalizations">
-                    <h3 style="margin-bottom: 15px; color: #333;">Personalizations by Product/Module</h3>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Product Group</th>
-                                <th>Module</th>
-                                <th>Page File</th>
-                                <th>Field</th>
-                                <th>Personalization Type</th>
-                            </tr>
-                        </thead>
-                        <tbody id="personalizationsTableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Global state
-        let featureData = [];
-        let personalizationData = [];
-        let configData = {};
-        let filesLoaded = {
-            featureList: false,
-            helperTool: false
-        };
-
-        // Complexity weights
-        const complexityWeights = {
-            "SCM Common Components": 0.5,
-            "Inventory Management": 1.2,
-            "Maintenance": 1.2,
-            "Manufacturing": 1.5,
-            "Order Management": 1.0,
-            "Collaboration Messaging Framework": 1.0,
-            "Procurement": 1.0,
-            "Product Hub": 1.0,
-            "Purchasing": 1.0,
-            "Quality Management": 1.1,
-            "Self Service Procurement & RSSP": 1.0,
-            "Supply Chain Collaboration": 1.0,
-            "Supply Chain Orchestration": 1.1,
-            "Supply Chain Planning": 1.2,
-            "Product Management": 1.0,
-            "Maintenance Management": 1.2,
-            "Product Model": 1.0,
-            "Procurement Contracts": 1.0,
-            "Sourcing": 1.0,
-            "Self Service Procurement": 1.0
-        };
-
-        // Initialize event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            setupFileUploads();
-            setupTabs();
-            setupButtons();
-        });
-
-        function setupFileUploads() {
-            // Feature List Upload
-            const featureListCard = document.getElementById('featureListCard');
-            const featureListFile = document.getElementById('featureListFile');
-            const featureListStatus = document.getElementById('featureListStatus');
-
-            featureListCard.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                featureListCard.classList.add('dragover');
-            });
-
-            featureListCard.addEventListener('dragleave', () => {
-                featureListCard.classList.remove('dragover');
-            });
-
-            featureListCard.addEventListener('drop', (e) => {
-                e.preventDefault();
-                featureListCard.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    featureListFile.files = files;
-                    processFeatureList(files[0]);
-                }
-            });
-
-            featureListFile.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    processFeatureList(e.target.files[0]);
-                }
-            });
-
-            // Helper Tool Upload
-            const helperToolCard = document.getElementById('helperToolCard');
-            const helperToolFile = document.getElementById('helperToolFile');
-            const helperToolStatus = document.getElementById('helperToolStatus');
-
-            helperToolCard.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                helperToolCard.classList.add('dragover');
-            });
-
-            helperToolCard.addEventListener('dragleave', () => {
-                helperToolCard.classList.remove('dragover');
-            });
-
-            helperToolCard.addEventListener('drop', (e) => {
-                e.preventDefault();
-                helperToolCard.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    helperToolFile.files = files;
-                    processHelperTool(files[0]);
-                }
-            });
-
-            helperToolFile.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    processHelperTool(e.target.files[0]);
-                }
-            });
+// Pre-select modules based on input data
+MODULES.forEach(m => {
+    if(m.count > 0) {
+        selectedModules.add(m.name);
+        // Set personalization count based on input file
+        if(INPUT_PERSONALIZATIONS[m.product] && INPUT_PERSONALIZATIONS[m.product][m.name] !== undefined) {
+            personalizationCounts[m.product] = INPUT_PERSONALIZATIONS[m.product][m.name];
+        } else {
+            personalizationCounts[m.product] = 0;
         }
+    }
+});
 
-        function processFeatureList(file) {
-            const status = document.getElementById('featureListStatus');
-            status.className = 'file-status';
-            status.textContent = 'Processing...';
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    
-                    // Parse Sheet1
-                    const sheet = workbook.Sheets['Sheet1'];
-                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                    
-                    // Extract features by product/module
-                    featureData = parseFeatureList(jsonData);
-                    
-                    filesLoaded.featureList = true;
-                    status.className = 'file-status success';
-                    status.textContent = `✓ Loaded ${featureData.length} features`;
-                    
-                    updateProcessButton();
-                } catch (error) {
-                    console.error('Error processing feature list:', error);
-                    status.className = 'file-status error';
-                    status.textContent = '✗ Error: ' + error.message;
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function parseFeatureList(data) {
-            const features = [];
-            
-            // Skip header rows (first 2 rows), start from actual data
-            for (let i = 2; i < data.length; i++) {
-                const row = data[i];
-                
-                // Check if row has valid data (S.no, Product, Module, Feature Name)
-                if (row[0] && row[1] && row[2] && row[3]) {
-                    const sNo = row[0];
-                    const product = normalizeProductName(row[1]?.toString().trim());
-                    const module = normalizeModuleName(row[2]?.toString().trim());
-                    const featureName = row[3]?.toString().trim();
-                    const updateVersion = row[4]?.toString().trim() || '';
-                    const mandateVersion = row[5]?.toString().trim() || '';
-                    
-                    // Skip if feature name starts with "Redwood" (we want actual feature names)
-                    // Actually, all features start with "Redwood:", so we include them
-                    if (product && module && featureName && !isNaN(sNo)) {
-                        features.push({
-                            sNo: sNo,
-                            product: product,
-                            module: module,
-                            featureName: featureName,
-                            updateVersion: updateVersion,
-                            mandateVersion: mandateVersion
-                        });
-                    }
-                }
-            }
-            
-            return features;
-        }
-
-        function processHelperTool(file) {
-            const status = document.getElementById('helperToolStatus');
-            status.className = 'file-status';
-            status.textContent = 'Processing...';
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    
-                    // Get all sheet names
-                    const sheetNames = workbook.SheetNames;
-                    personalizationData = [];
-                    
-                    // Parse the first sheet (Page composer summary)
-                    if (sheetNames.length > 0) {
-                        const sheet = workbook.Sheets[sheetNames[0]];
-                        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                        personalizationData = parseHelperToolSummary(jsonData);
-                    }
-                    
-                    filesLoaded.helperTool = true;
-                    status.className = 'file-status success';
-                    status.textContent = `✓ Loaded ${personalizationData.length} personalizations`;
-                    
-                    updateProcessButton();
-                } catch (error) {
-                    console.error('Error processing helper tool:', error);
-                    status.className = 'file-status error';
-                    status.textContent = '✗ Error: ' + error.message;
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function parseHelperToolSummary(data) {
-            const personalizations = [];
-            
-            // Look for the summary table (starts around row 4-5)
-            for (let i = 4; i < data.length; i++) {
-                const row = data[i];
-                
-                // Check if this is a data row with Product Group, Product, and counts
-                if (row[0] && row[1] && row[2] !== undefined && row[3] !== undefined) {
-                    const productGroup = row[0]?.toString().trim();
-                    const product = row[1]?.toString().trim();
-                    const numFiles = parseInt(row[2]) || 0;
-                    const totalPers = parseInt(row[3]) || 0;
-                    
-                    // Skip if not a valid product row
-                    if (productGroup && product && totalPers > 0) {
-                        personalizations.push({
-                            productGroup: productGroup,
-                            module: product,
-                            numFiles: numFiles,
-                            totalPersonalizations: totalPers
-                        });
-                    }
-                }
-            }
-            
-            return personalizations;
-        }
-
-        function updateProcessButton() {
-            const btn = document.getElementById('processBtn');
-            btn.disabled = !(filesLoaded.featureList && filesLoaded.helperTool);
-        }
-
-        function setupTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    const tabId = tab.getAttribute('data-tab');
-                    document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
-        }
-
-        function setupButtons() {
-            document.getElementById('processBtn').addEventListener('click', processFiles);
-            document.getElementById('downloadConfigBtn').addEventListener('click', downloadConfig);
-            document.getElementById('downloadPythonBtn').addEventListener('click', downloadPythonScript);
-            document.getElementById('clearBtn').addEventListener('click', clearAll);
-        }
-
-        function processFiles() {
-            const loading = document.getElementById('loading');
-            const results = document.getElementById('resultsSection');
-            
-            loading.classList.add('active');
-            results.classList.remove('active');
-            
-            setTimeout(() => {
-                generateConfig();
-                displayResults();
-                loading.classList.remove('active');
-                results.classList.add('active');
-                
-                // Enable download buttons
-                document.getElementById('downloadConfigBtn').disabled = false;
-                document.getElementById('downloadPythonBtn').disabled = false;
-            }, 1000);
-        }
-
-        function generateConfig() {
-            configData = {};
-            
-            // Group features by product/module
-            const featureCounts = {};
-            featureData.forEach(feature => {
-                const key = `${feature.product}|${feature.module}`;
-                if (!featureCounts[key]) {
-                    featureCounts[key] = 0;
-                }
-                featureCounts[key]++;
-            });
-            
-            // Group personalizations by product/module (from summary)
-            const persCounts = {};
-            personalizationData.forEach(pers => {
-                // Map product group to product name
-                const product = mapProductGroupToProduct(pers.productGroup);
-                const key = `${product}|${pers.module}`;
-                if (!persCounts[key]) {
-                    persCounts[key] = 0;
-                }
-                persCounts[key] = pers.totalPersonalizations;
-            });
-            
-            // Combine into config
-            const allKeys = new Set([...Object.keys(featureCounts), ...Object.keys(persCounts)]);
-            
-            allKeys.forEach(key => {
-                const [product, module] = key.split('|');
-                
-                if (!configData[product]) {
-                    configData[product] = {};
-                }
-                
-                if (!configData[product][module]) {
-                    configData[product][module] = {
-                        features: 0,
-                        personalizations: 0
-                    };
-                }
-                
-                if (featureCounts[key]) {
-                    configData[product][module].features = featureCounts[key];
-                }
-                
-                if (persCounts[key]) {
-                    configData[product][module].personalizations = persCounts[key];
-                }
-            });
-        }
-
-        function normalizeProductName(name) {
-            if (!name) return 'Unknown';
-            name = name.trim();
-            
-            // Normalize to title case and handle variations
-            const lowerName = name.toLowerCase();
-            
-            if (lowerName.includes('procurement')) {
-                return 'Procurement';
-            } else if (lowerName.includes('order management')) {
-                return 'Order Management';
-            } else if (lowerName.includes('maintenance')) {
-                return 'Maintenance';
-            } else if (lowerName.includes('product management') || lowerName.includes('product model')) {
-                return 'Product Management';
-            } else if (lowerName.includes('pricing')) {
-                return 'Order Management';
-            }
-            
-            return name;
-        }
-
-        function normalizeModuleName(name) {
-            if (!name) return 'Unknown';
-            name = name.trim();
-            
-            // Normalize to proper case
-            const lowerName = name.toLowerCase();
-            
-            if (lowerName.includes('purchasing')) {
-                return 'Purchasing';
-            } else if (lowerName.includes('self service procurement')) {
-                return 'Self Service Procurement';
-            } else if (lowerName.includes('sourcing')) {
-                return 'Sourcing';
-            } else if (lowerName.includes('procurement contracts')) {
-                return 'Procurement Contracts';
-            } else if (lowerName.includes('order management')) {
-                return 'Order Management';
-            } else if (lowerName.includes('pricing')) {
-                return 'Pricing';
-            } else if (lowerName.includes('maintenance management')) {
-                return 'Maintenance Management';
-            } else if (lowerName.includes('product model')) {
-                return 'Product Model';
-            }
-            
-            return name;
-        }
-
-        function mapProductGroupToProduct(productGroup) {
-            const mapping = {
-                'Asset Lifecycle Management': 'Maintenance',
-                'Order Management': 'Order Management',
-                'Procurement': 'Procurement',
-                'Product Management': 'Product Management'
-            };
-            return mapping[productGroup] || productGroup;
-        }
-
-        function displayResults() {
-            // Update summary cards
-            const products = Object.keys(configData);
-            const modules = products.reduce((acc, product) => {
-                return acc + Object.keys(configData[product]).length;
-            }, 0);
-            
-            const totalFeatures = featureData.length;
-            const totalPers = personalizationData.reduce((sum, p) => sum + p.totalPersonalizations, 0);
-            
-            document.getElementById('totalProducts').textContent = products.length;
-            document.getElementById('totalModules').textContent = modules;
-            document.getElementById('totalFeatures').textContent = totalFeatures;
-            document.getElementById('totalPersonalizations').textContent = totalPers;
-            
-            // Update summary table
-            const summaryBody = document.getElementById('summaryTableBody');
-            summaryBody.innerHTML = '';
-            
-            products.forEach(product => {
-                Object.keys(configData[product]).forEach(module => {
-                    const data = configData[product][module];
-                    const weight = complexityWeights[module] || complexityWeights[product] || 1.0;
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><strong>${product}</strong></td>
-                        <td>${module}</td>
-                        <td>${data.features}</td>
-                        <td>${data.personalizations}</td>
-                        <td>${weight}x</td>
-                    `;
-                    summaryBody.appendChild(row);
-                });
-            });
-            
-            // Update config output
-            const configOutput = document.getElementById('configOutput');
-            configOutput.textContent = generateConfigString();
-            
-            // Update features table
-            const featuresBody = document.getElementById('featuresTableBody');
-            featuresBody.innerHTML = '';
-            featureData.slice(0, 100).forEach(feature => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${feature.product}</td>
-                    <td>${feature.module}</td>
-                    <td>${feature.featureName}</td>
-                    <td>${feature.updateVersion}</td>
-                    <td>${feature.mandateVersion}</td>
-                `;
-                featuresBody.appendChild(row);
-            });
-            
-            if (featureData.length > 100) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="5" style="text-align: center; color: #666;">... and ${featureData.length - 100} more features</td>`;
-                featuresBody.appendChild(row);
-            }
-            
-            // Update personalizations table
-            const persBody = document.getElementById('personalizationsTableBody');
-            persBody.innerHTML = '';
-            personalizationData.forEach(pers => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${pers.productGroup}</td>
-                    <td>${pers.module}</td>
-                    <td>${pers.numFiles} files</td>
-                    <td>-</td>
-                    <td>${pers.totalPersonalizations} personalizations</td>
-                `;
-                persBody.appendChild(row);
-            });
-        }
-
-        function generateConfigString() {
-            const customerName = document.getElementById('customerName').value || 'Patrick';
-            
-            let config = `from redwood_module_estimator_FIXED import RedwoodEstimatorGenerator
-
-# Create estimator
-estimator = RedwoodEstimatorGenerator()
-estimator.set_customer_name("${customerName}")
-
-# Module-level configuration from uploaded files
-config = {
+renderSelector();
+rebuildProductConfig();
+renderEstimation();
+activateTab('estimation'); // Default to estimation
+}
+function renderTabs(tabs) {
+const container = document.getElementById('tabsContainer');
+container.innerHTML = '';
+const tabLabels = {
+selector: '1. Module Selection',
+estimation: '2. Estimation Report',
+admin: '3. Admin Configuration'
+};
+tabs.forEach(tabId => {
+const tab = document.createElement('div');
+tab.className = 'tab';
+tab.textContent = tabLabels[tabId];
+tab.onclick = () => activateTab(tabId);
+container.appendChild(tab);
+});
+}
+function activateTab(id){
+document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+const tabs = Array.from(document.querySelectorAll('.tab'));
+const idx = tabs.findIndex(t => t.textContent.includes(id === 'selector' ? 'Module' : id === 'estimation' ? 'Estimation' : 'Admin'));
+if(idx >= 0) tabs[idx].classList.add('active');
+document.getElementById(id).classList.add('active');
+if (id === 'admin' && currentUser === 'admin') {
+renderAdmin();
+}
+}
+function renderSection(parent,title,tasks,editable){
+if(tasks.length===0) return;
+const sec=document.createElement("div");
+sec.className="section";
+sec.innerHTML=`<div class="section-header">${title}</div>`;
+let rows="";
+let sectionTotal = 0;
+let sectionCSU = 0;
+tasks.forEach((t,i)=>{
+const total=(t.nonProd+t.prod)*t.qty;
+const csu = total/2;
+sectionTotal += total;
+sectionCSU += csu;
+const sectionKey = title.replace(/[^a-zA-Z0-9]/g,'_');
+rows+=`
+<tr>
+<td class="task-name">${t.name}</td>
+<td class="task-details">${t.detail}</td>
+<td>${editable?`<input type="number" step="0.1" value="${t.nonProd}" data-section="${sectionKey}" data-index="${i}" data-field="nonProd" class="editable-field">`:t.nonProd.toFixed(1)}</td>
+<td>${editable?`<input type="number" step="0.1" value="${t.prod}" data-section="${sectionKey}" data-index="${i}" data-field="prod" class="editable-field">`:t.prod.toFixed(1)}</td>
+<td>${editable?`<input type="number" value="${t.qty}" data-section="${sectionKey}" data-index="${i}" data-field="qty" class="editable-field">`:t.qty}</td>
+<td>${total.toFixed(1)}</td>
+<td>${csu.toFixed(1)}</td>
+</tr>`;
+});
+// Add section total row
+rows += `
+<tr class="section-total">
+<td colspan="5" style="text-align:right;">Section Total:</td>
+<td>${sectionTotal.toFixed(1)}</td>
+<td>${sectionCSU.toFixed(1)}</td>
+</tr>`;
+sec.innerHTML+=`
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Details</th>
+<th>Non-Prod</th>
+<th>Prod</th>
+<th>Qty</th>
+<th>Total Man Hours</th>
+<th>CSU</th>
+</tr>
+</thead>
+<tbody>${rows}</tbody>
+</table>`;
+parent.appendChild(sec);
+}
+function renderSelector(){
+const container = document.getElementById('productContainer');
+container.innerHTML = '';
+updateSummary();
+PRODUCTS.forEach(product => {
+const productDiv = document.createElement('div');
+productDiv.className = 'section';
+const modulesInProduct = MODULES.filter(m => m.product === product.name);
+if (!personalizationCounts[product.name]) {
+personalizationCounts[product.name] = 0;
+}
+const safeId = product.name.replace(/\s+/g, '_').replace(/&/g,'and');
+// Using the product-header class for black background with white text
+productDiv.innerHTML = `
+<div class="product-header">${product.name} (Weight: ${product.weight})</div>
+<div style="padding:12px 16px;background:var(--oracle-background-grey);">
+<label style="font-weight:600;">Personalizations:
+<input type="number" min="0" value="${personalizationCounts[product.name]}"
+style="width:100px;margin-left:8px;"
+onchange="updatePersonalization('${product.name}', this.value)">
+</label>
+</div>
+<table>
+<thead><tr><th style="width:50%">Module</th><th>Features</th><th>Selected</th></tr></thead>
+<tbody id="mods_${safeId}"></tbody>
+</table>`;
+container.appendChild(productDiv);
+const tbody = document.getElementById(`mods_${safeId}`);
+modulesInProduct.forEach(mod => {
+const isSelected = selectedModules.has(mod.name);
+const row = document.createElement('tr');
+row.innerHTML = `
+<td style="text-align:left;">${mod.name}</td>
+<td>${mod.count}</td>
+<td><button class="module-toggle-btn ${isSelected?'selected':'unselected'}"
+onclick="toggleModule('${mod.name.replace(/'/g,"\\'")}')">
+${isSelected ? 'Yes' : 'No'}
+</button></td>`;
+tbody.appendChild(row);
+});
+});
+}
+function toggleModule(moduleName) {
+if (selectedModules.has(moduleName)) {
+selectedModules.delete(moduleName);
+} else {
+selectedModules.add(moduleName);
+}
+renderSelector();
+rebuildProductConfig();
+renderEstimation();
+}
+function updatePersonalization(productName, value) {
+personalizationCounts[productName] = parseInt(value) || 0;
+rebuildProductConfig();
+renderEstimation();
+}
+function updateSummary() {
+document.getElementById('moduleCount').value = selectedModules.size;
+const selectedProducts = new Set();
+selectedModules.forEach(name => {
+const mod = MODULES.find(m => m.name === name);
+if (mod) selectedProducts.add(mod.product);
+});
+document.getElementById('productCount').value = selectedProducts.size;
+}
+function rebuildProductConfig(){
+CONFIG.products = {};
+const selectedProducts = new Set();
+selectedModules.forEach(name => {
+const mod = MODULES.find(m => m.name === name);
+if (mod) selectedProducts.add(mod.product);
+});
+selectedProducts.forEach(productName => {
+const product = PRODUCTS.find(p => p.name === productName);
+let featureCount = 0;
+MODULES.filter(m => m.product === productName).forEach(m => {
+if (selectedModules.has(m.name)) featureCount += m.count;
+});
+const persCount = personalizationCounts[productName] || 0;
+CONFIG.products[productName] = [
+{ name: "Features Enablement", detail: "Enabling Feature by Feature by setup, Profile option, Opt-in Enablement.", nonProd: 0.1, prod: 0.1, qty: featureCount },
+{ name: "Verification of Enabled Features at Config Level", detail: "Once All the features are enabled, verified all features enablement.", nonProd: 0.1, prod: 0.1, qty: featureCount },
+{ name: "Verification of Enabled Features at UI", detail: "Verification of enabled functionality by going into respective UI once all the features are enabled.", nonProd: 8 * product.weight, prod: 8 * product.weight, qty: 1 },
+{ name: "Unit Testing w/o Personalization", detail: "Testing of Std Process by creating transaction.", nonProd: 24 * product.weight, prod: 0, qty: 1 },
+{ name: "Comparison between Classic vs Redwood", detail: "Column by Column comparison between Classic and Redwood to ensure everything is covered.", nonProd: 16 * product.weight, prod: 0, qty: 1 },
+{ name: "Enablement of Personalization and Production Migration", detail: "This is per Personalization time / Env", nonProd: 2, prod: 1, qty: persCount },
+{ name: "Testing After Personalizations", detail: "This can Vary with no.of Features and business process and Complexity", nonProd: 40, prod: 0, qty: persCount > 0 ? 1 : 0 }
+];
+});
+let totalPers = 0;
+selectedProducts.forEach(p => { totalPers += personalizationCounts[p] || 0; });
+CONFIG.hypercare[0].qty = totalPers;
+CONFIG.hypercare[1].qty = Math.max(3, Math.ceil(totalPers * 0.2));
+}
+function renderEstimation(){
+const c=document.getElementById("formContainer");
+c.innerHTML="";
+renderSection(c,"Overview",CONFIG.overview,false);
+Object.keys(CONFIG.products).forEach(productName => {
+renderSection(c,`Product: ${productName}`, CONFIG.products[productName], false);
+});
+renderSection(c,"UAT and Migration, Hypercare",CONFIG.hypercare,false);
+// Add grand total section
+renderGrandTotal(c);
+}
+function renderAdmin(){
+const c=document.getElementById("adminContainer");
+c.innerHTML="";
+renderSection(c,"Overview",CONFIG.overview,true);
+Object.keys(CONFIG.products).forEach(productName => {
+renderSection(c,`Product: ${productName}`, CONFIG.products[productName], true);
+});
+renderSection(c,"UAT and Migration, Hypercare",CONFIG.hypercare,true);
+// Add grand total section
+renderGrandTotal(c);
+}
+function renderGrandTotal(parent) {
+let grandTotal = 0;
+let grandCSU = 0;
+// Calculate from Overview
+CONFIG.overview.forEach(t => {
+const total = (t.nonProd + t.prod) * t.qty;
+grandTotal += total;
+grandCSU += total / 2;
+});
+// Calculate from Products
+Object.values(CONFIG.products).forEach(tasks => {
+tasks.forEach(t => {
+const total = (t.nonProd + t.prod) * t.qty;
+grandTotal += total;
+grandCSU += total / 2;
+});
+});
+// Calculate from Hypercare
+CONFIG.hypercare.forEach(t => {
+const total = (t.nonProd + t.prod) * t.qty;
+grandTotal += total;
+grandCSU += total / 2;
+});
+// Create grand total section with Oracle styling
+const sec = document.createElement("div");
+sec.className = "section";
+sec.style.marginTop = "30px";
+sec.innerHTML = `
+<div class="section-header" style="background:var(--oracle-dark-grey);color:var(--oracle-white);font-size:18px;">📊 GRAND TOTAL</div>
+<table>
+<thead>
+<tr style="background:var(--oracle-background-grey);">
+<th colspan="5" style="text-align:right;font-size:16px;color:var(--oracle-dark-grey);">TOTAL ESTIMATION</th>
+<th style="font-size:16px;color:var(--oracle-dark-grey);font-weight:700;">${grandTotal.toFixed(1)} Hours</th>
+<th style="font-size:16px;color:var(--oracle-dark-grey);font-weight:700;">${grandCSU.toFixed(1)} CSU</th>
+</tr>
+</thead>
+</table>
 `;
-            
-            Object.keys(configData).forEach((product, productIndex) => {
-                config += `    "${product}": {\n`;
-                
-                const modules = Object.keys(configData[product]);
-                modules.forEach((module, moduleIndex) => {
-                    const data = configData[product][module];
-                    const comma = (productIndex < Object.keys(configData).length - 1 || moduleIndex < modules.length - 1) ? ',' : '';
-                    config += `        "${module}": {"features": ${data.features}, "personalizations": ${data.personalizations}}${comma}\n`;
-                });
-                
-                config += `    }${productIndex < Object.keys(configData).length - 1 ? ',' : ''}\n`;
+parent.appendChild(sec);
+}
+function updateTask(sectionKey,idx,field,value){
+value = field==='qty' ? (parseInt(value)||0) : (parseFloat(value)||0);
+console.log('updateTask called:', {sectionKey, idx, field, value});
+if(sectionKey==="Overview") {
+if(CONFIG.overview[idx]) {
+CONFIG.overview[idx][field]=value;
+console.log('Updated Overview');
+}
+} else if(sectionKey.includes("Hypercare") || sectionKey.includes("UAT")) {
+if(CONFIG.hypercare[idx]) {
+CONFIG.hypercare[idx][field]=value;
+console.log('Updated Hypercare');
+}
+} else if(sectionKey.includes("Product")) {
+// Handle product sections - extract product name from section key
+// Section key format: "Product__ProductName" where __ comes from "Product: "
+let productName = sectionKey.replace(/^Product_+/, "").replace(/_/g, " ");
+console.log('Looking for product:', productName);
+console.log('Available products:', Object.keys(CONFIG.products));
+// Try to find exact match first
+let matchingProduct = Object.keys(CONFIG.products).find(p => p === productName);
+// If no exact match, try fuzzy matching
+if (!matchingProduct) {
+matchingProduct = Object.keys(CONFIG.products).find(p =>
+p.replace(/[^a-zA-Z0-9]/g,'').toLowerCase() === productName.replace(/[^a-zA-Z0-9]/g,'').toLowerCase()
+);
+}
+console.log('Matched product:', matchingProduct);
+if(matchingProduct && CONFIG.products[matchingProduct] && CONFIG.products[matchingProduct][idx]) {
+CONFIG.products[matchingProduct][idx][field] = value;
+console.log('Updated product task');
+} else {
+console.error('Could not update - product or task not found');
+}
+}
+// Re-render both estimation and admin sections
+renderEstimation();
+if(currentUser === 'admin') {
+renderAdmin();
+}
+}
+function downloadEstimation(){
+const customerName = document.getElementById('customerName').value || 'Customer';
+const wb = XLSX.utils.book_new();
+const ws_data = [];
+// Header with customer info
+ws_data.push(['Redwood Adoption Estimator']);
+ws_data.push(['Customer:', customerName]);
+ws_data.push(['Date:', new Date().toLocaleDateString()]);
+ws_data.push([]);
+// Column headers
+ws_data.push(['Section', 'Task', 'Details', 'Non-Prod', 'Prod', 'Qty', 'Total Man Hours', 'CSU']);
+// Overview section
+let sectionTotal = 0;
+let sectionCSU = 0;
+CONFIG.overview.forEach(t => {
+const tot = (t.nonProd + t.prod) * t.qty;
+const csu = tot / 2;
+sectionTotal += tot;
+sectionCSU += csu;
+ws_data.push(['Overview', t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
+});
+ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
+ws_data.push([]);
+// Product sections
+let grandTotal = sectionTotal;
+let grandCSU = sectionCSU;
+Object.entries(CONFIG.products).forEach(([prodName, tasks]) => {
+sectionTotal = 0;
+sectionCSU = 0;
+tasks.forEach(t => {
+const tot = (t.nonProd + t.prod) * t.qty;
+const csu = tot / 2;
+sectionTotal += tot;
+sectionCSU += csu;
+ws_data.push([`Product: ${prodName}`, t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
+});
+ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
+ws_data.push([]);
+grandTotal += sectionTotal;
+grandCSU += sectionCSU;
+});
+// Hypercare section
+sectionTotal = 0;
+sectionCSU = 0;
+CONFIG.hypercare.forEach(t => {
+const tot = (t.nonProd + t.prod) * t.qty;
+const csu = tot / 2;
+sectionTotal += tot;
+sectionCSU += csu;
+ws_data.push(['UAT and Migration, Hypercare', t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
+});
+ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
+ws_data.push([]);
+grandTotal += sectionTotal;
+grandCSU += sectionCSU;
+// Grand total
+ws_data.push(['', '', '', '', '', 'GRAND TOTAL:', grandTotal, grandCSU]);
+ws_data.push([]);
+
+// --- ADD SUMMARY TABLE ---
+ws_data.push(['SUMMARY']);
+ws_data.push(['Product', 'Module', 'Features', 'Personalization', 'Complexity', 'CSU Features', 'Actual CSU']);
+
+let summaryTotalFeatures = 0;
+let summaryTotalPers = 0;
+let summaryTotalCSU = 0;
+
+// Generate Summary Rows based on selected modules
+MODULES.forEach(mod => {
+    if(selectedModules.has(mod.name)) {
+        const prodName = mod.product;
+        const featCount = mod.count;
+        const persCount = personalizationCounts[prodName] || 0;
+        const complexity = 1;
+        
+        // Calculate CSU for this module (Approximation based on total effort / 2 for this module's tasks)
+        // For simplicity in summary, we use the logic: (Features * 0.2 + Pers * 2) / 2 roughly, 
+        // but to match the template's Grand Total CSU distribution, we'll distribute proportionally or use fixed logic.
+        // Based on prompt example: Purchasing 30 Feat, 20 Pers -> 105 CSU. OM 15 Feat, 22 Pers -> 36 CSU.
+        // It seems CSU is calculated as Total Hours / 2 for that product.
+        // We will calculate product specific total hours here.
+        
+        let prodTotalHours = 0;
+        if(CONFIG.products[prodName]) {
+            CONFIG.products[prodName].forEach(t => {
+                prodTotalHours += (t.nonProd + t.prod) * t.qty;
             });
-            
-            config += `}
-
-estimator.load_from_config(config)
-estimator.generate_workbook("${customerName.replace(/\s+/g, '_')}_Redwood_Estimation.xlsx")
-`;
-            
-            return config;
         }
+        const prodCSU = prodTotalHours / 2;
+        
+        ws_data.push([prodName, mod.name, featCount, persCount, complexity, prodCSU.toFixed(1), prodCSU.toFixed(1)]);
+        
+        summaryTotalFeatures += featCount;
+        summaryTotalPers += persCount;
+        summaryTotalCSU += prodCSU;
+    }
+});
 
-        function downloadConfig() {
-            const config = generateConfigString();
-            const blob = new Blob([config], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'redwood_config.py';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function downloadPythonScript() {
-            const customerName = document.getElementById('customerName').value || 'Patrick';
-            
-            let script = `#!/usr/bin/env python3
-"""
-Redwood Estimator Script
-Generated automatically from uploaded files
-Customer: ${customerName}
-"""
-
-from redwood_module_estimator_FIXED import RedwoodEstimatorGenerator
-
-# Create estimator
-estimator = RedwoodEstimatorGenerator()
-estimator.set_customer_name("${customerName}")
-
-# Module-level configuration from uploaded files
-config = {
-`;
-            
-            Object.keys(configData).forEach((product, productIndex) => {
-                script += `    "${product}": {\n`;
-                
-                const modules = Object.keys(configData[product]);
-                modules.forEach((module, moduleIndex) => {
-                    const data = configData[product][module];
-                    const comma = (productIndex < Object.keys(configData).length - 1 || moduleIndex < modules.length - 1) ? ',' : '';
-                    script += `        "${module}": {"features": ${data.features}, "personalizations": ${data.personalizations}}${comma}\n`;
-                });
-                
-                script += `    }${productIndex < Object.keys(configData).length - 1 ? ',' : ''}\n`;
+// Add Product Totals (Grouped)
+const productTotals = {};
+MODULES.forEach(mod => {
+    if(selectedModules.has(mod.name)) {
+        if(!productTotals[mod.product]) productTotals[mod.product] = { feat:0, pers:0, csu:0 };
+        productTotals[mod.product].feat += mod.count;
+        productTotals[mod.product].pers += (personalizationCounts[mod.product] || 0);
+        // Recalculate CSU for total row
+        let prodTotalHours = 0;
+        if(CONFIG.products[mod.product]) {
+            CONFIG.products[mod.product].forEach(t => {
+                prodTotalHours += (t.nonProd + t.prod) * t.qty;
             });
-            
-            script += `}
-
-estimator.load_from_config(config)
-estimator.generate_workbook("${customerName.replace(/\s+/g, '_')}_Redwood_Estimation.xlsx")
-
-print("✓ Estimation workbook generated successfully!")
-`;
-            
-            const blob = new Blob([script], { type: 'text/x-python' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'generate_redwood_estimation.py';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
+        productTotals[mod.product].csu = prodTotalHours / 2;
+    }
+});
 
-        function clearAll() {
-            // Reset state
-            featureData = [];
-            personalizationData = [];
-            configData = {};
-            filesLoaded = {
-                featureList: false,
-                helperTool: false
-            };
-            
-            // Reset file inputs
-            document.getElementById('featureListFile').value = '';
-            document.getElementById('helperToolFile').value = '';
-            
-            // Reset status
-            document.getElementById('featureListStatus').className = 'file-status';
-            document.getElementById('featureListStatus').textContent = '';
-            document.getElementById('helperToolStatus').className = 'file-status';
-            document.getElementById('helperToolStatus').textContent = '';
-            
-            // Reset buttons
-            updateProcessButton();
-            document.getElementById('downloadConfigBtn').disabled = true;
-            document.getElementById('downloadPythonBtn').disabled = true;
-            
-            // Hide results
-            document.getElementById('resultsSection').classList.remove('active');
-            
-            // Reset customer name
-            document.getElementById('customerName').value = 'Patrick';
-        }
-    </script>
+Object.entries(productTotals).forEach(([pname, data]) => {
+    ws_data.push(['Total', pname, data.feat, data.pers, 1, data.csu.toFixed(1), data.csu.toFixed(1)]);
+    summaryTotalCSU += data.csu; // Avoid double counting if iterating modules above
+});
+
+ws_data.push(['Grand Total', '', summaryTotalFeatures, summaryTotalPers, 1, summaryTotalCSU.toFixed(1), summaryTotalCSU.toFixed(1)]);
+
+
+const ws = XLSX.utils.aoa_to_sheet(ws_data);
+// Set column widths
+ws['!cols'] = [
+{ wch: 30 },  // Section
+{ wch: 45 },  // Task
+{ wch: 60 },  // Details
+{ wch: 12 },  // Non-Prod
+{ wch: 12 },  // Prod
+{ wch: 8 },   // Qty
+{ wch: 18 },  // Total Man Hours
+{ wch: 12 }   // CSU
+];
+// Apply styles
+const range = XLSX.utils.decode_range(ws['!ref']);
+for (let R = range.s.r; R <= range.e.r; ++R) {
+for (let C = range.s.c; C <= range.e.c; ++C) {
+const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+if (!ws[cell_address]) continue;
+// Initialize cell style
+if (!ws[cell_address].s) ws[cell_address].s = {};
+// Title row (row 0)
+if (R === 0) {
+ws[cell_address].s = {
+font: { bold: true, sz: 16, color: { rgb: "000000" } },
+alignment: { horizontal: "left" }
+};
+}
+// Header row (row 4) - Excel blue
+if (R === 4) {
+ws[cell_address].s = {
+font: { bold: true, color: { rgb: "FFFFFF" } },
+fill: { fgColor: { rgb: "5B9BD5" } },
+alignment: { horizontal: "center", vertical: "center" },
+border: {
+top: { style: "thin", color: { rgb: "000000" } },
+bottom: { style: "thin", color: { rgb: "000000" } },
+left: { style: "thin", color: { rgb: "000000" } },
+right: { style: "thin", color: { rgb: "000000" } }
+}
+};
+}
+// Section header rows (grey)
+if (ws[cell_address].v === 'Overview' || ws[cell_address].v === 'UAT and Migration, Hypercare' || 
+    (typeof ws[cell_address].v === 'string' && ws[cell_address].v.startsWith('Product:'))) {
+for (let colC = 0; colC <= 7; colC++) {
+const headerCell = XLSX.utils.encode_cell({ r: R, c: colC });
+if (ws[headerCell]) {
+ws[headerCell].s = {
+font: { bold: true, color: { rgb: "FFFFFF" } },
+fill: { fgColor: { rgb: "A5A5A5" } },
+alignment: { horizontal: "left" },
+border: {
+top: { style: "thin" },
+bottom: { style: "thin" },
+left: { style: "thin" },
+right: { style: "thin" }
+}
+};
+}
+}
+}
+// Section total rows (light green)
+if (ws[cell_address].v === 'Section Total:') {
+for (let colC = 0; colC <= 7; colC++) {
+const totalCell = XLSX.utils.encode_cell({ r: R, c: colC });
+if (ws[totalCell]) {
+ws[totalCell].s = {
+font: { bold: true },
+fill: { fgColor: { rgb: "C6EFCE" } },
+alignment: { horizontal: colC >= 5 ? "center" : "right" },
+border: {
+top: { style: "thin" },
+bottom: { style: "thin" },
+left: { style: "thin" },
+right: { style: "thin" }
+}
+};
+}
+}
+}
+// Grand total row (darker green/blue)
+if (ws[cell_address].v === 'GRAND TOTAL:') {
+for (let colC = 0; colC <= 7; colC++) {
+const grandTotalCell = XLSX.utils.encode_cell({ r: R, c: colC });
+if (ws[grandTotalCell]) {
+ws[grandTotalCell].s = {
+font: { bold: true, sz: 14 },
+fill: { fgColor: { rgb: "9CC2E5" } },
+alignment: { horizontal: colC >= 5 ? "center" : "right" },
+border: {
+top: { style: "medium" },
+bottom: { style: "medium" },
+left: { style: "thin" },
+right: { style: "thin" }
+}
+};
+}
+}
+}
+// Summary header
+if (ws[cell_address].v === 'SUMMARY') {
+ws[cell_address].s = {
+font: { bold: true, sz: 14, color: { rgb: "000000" } },
+fill: { fgColor: { rgb: "DDEBF7" } },
+alignment: { horizontal: "left" }
+};
+}
+// Summary table header row
+if (ws[cell_address].v === 'Product' && C === 0 && R > 10) {
+for (let colC = 0; colC <= 6; colC++) {
+const summaryHeaderCell = XLSX.utils.encode_cell({ r: R, c: colC });
+if (ws[summaryHeaderCell]) {
+ws[summaryHeaderCell].s = {
+font: { bold: true, color: { rgb: "FFFFFF" } },
+fill: { fgColor: { rgb: "5B9BD5" } },
+alignment: { horizontal: "center", vertical: "center" },
+border: {
+top: { style: "thin" },
+bottom: { style: "thin" },
+left: { style: "thin" },
+right: { style: "thin" }
+}
+};
+}
+}
+}
+// Summary total rows (light green)
+if (ws[cell_address].v === 'Total' || ws[cell_address].v === 'Grand Total') {
+for (let colC = 0; colC <= 6; colC++) {
+const summaryTotalCell = XLSX.utils.encode_cell({ r: R, c: colC });
+if (ws[summaryTotalCell]) {
+ws[summaryTotalCell].s = {
+font: { bold: true },
+fill: { fgColor: { rgb: "C6EFCE" } },
+alignment: { horizontal: "center" },
+border: {
+top: { style: "thin" },
+bottom: { style: "thin" },
+left: { style: "thin" },
+right: { style: "thin" }
+}
+};
+}
+}
+}
+// Regular data rows
+if (R > 4 && ws[cell_address].v !== 'Section Total:' && ws[cell_address].v !== 'GRAND TOTAL:' && 
+    ws[cell_address].v !== '' && ws[cell_address].v !== 'SUMMARY' && 
+    ws[cell_address].v !== 'Product' && ws[cell_address].v !== 'Total' && ws[cell_address].v !== 'Grand Total') {
+ws[cell_address].s = {
+alignment: {
+horizontal: C <= 2 ? "left" : "center",
+vertical: "center",
+wrapText: C === 2
+},
+border: {
+top: { style: "thin", color: { rgb: "BDBDBD" } },
+bottom: { style: "thin", color: { rgb: "BDBDBD" } },
+left: { style: "thin", color: { rgb: "BDBDBD" } },
+right: { style: "thin", color: { rgb: "BDBDBD" } }
+}
+};
+// Alternate row coloring
+if (R % 2 === 0) {
+ws[cell_address].s.fill = { fgColor: { rgb: "DDEBF7" } };
+}
+}
+// Number formatting for numeric columns
+if (C >= 3 && C <= 7 && R > 4 && typeof ws[cell_address].v === 'number') {
+ws[cell_address].z = '0.0';
+}
+}
+}
+XLSX.utils.book_append_sheet(wb, ws, "Estimation");
+XLSX.writeFile(wb, `${customerName}_Redwood_Estimation.xlsx`);
+}
+function downloadJSON() {
+const customerName = document.getElementById('customerName').value || 'Customer';
+// Create a complete snapshot of the application state
+const jsonData = {
+version: '1.0',
+exportDate: new Date().toISOString(),
+customerName: customerName,
+selectedModules: Array.from(selectedModules),
+personalizationCounts: personalizationCounts,
+config: CONFIG
+};
+// Convert to JSON string with formatting
+const jsonString = JSON.stringify(jsonData, null, 2);
+// Create blob and download
+const blob = new Blob([jsonString], { type: 'application/json' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = `${customerName}_Redwood_Config.json`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+}
+function uploadJSON() {
+const file = document.getElementById('jsonFile').files[0];
+if (!file) {
+alert('Please select a JSON file first');
+return;
+}
+const reader = new FileReader();
+reader.onload = function(e) {
+try {
+const jsonData = JSON.parse(e.target.result);
+// Validate the JSON structure
+if (!jsonData.config || !jsonData.selectedModules) {
+throw new Error('Invalid JSON structure. Please upload a valid configuration file.');
+}
+// Restore the application state
+document.getElementById('customerName').value = jsonData.customerName || 'Customer';
+// Restore selected modules
+selectedModules.clear();
+jsonData.selectedModules.forEach(mod => selectedModules.add(mod));
+// Restore personalization counts
+personalizationCounts = Object.assign({}, jsonData.personalizationCounts || {});
+// Restore configuration - deep copy to avoid reference issues
+CONFIG.overview = JSON.parse(JSON.stringify(jsonData.config.overview));
+CONFIG.products = JSON.parse(JSON.stringify(jsonData.config.products));
+CONFIG.hypercare = JSON.parse(JSON.stringify(jsonData.config.hypercare));
+// Re-render everything
+renderSelector();
+renderEstimation();
+if(currentUser === 'admin') {
+renderAdmin();
+}
+alert('JSON configuration imported successfully!');
+// Clear the file input
+document.getElementById('jsonFile').value = '';
+} catch(err) {
+console.error('JSON Upload error:', err);
+alert('Error reading JSON file: ' + err.message + '
+Please ensure you are uploading a valid JSON configuration file.');
+}
+};
+reader.readAsText(file);
+}
+</script>
 </body>
 </html>
