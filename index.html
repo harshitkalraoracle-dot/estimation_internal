@@ -337,6 +337,24 @@
             display: block;
         }
 
+        .preloaded-data {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .preloaded-data h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .preloaded-data ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
         @media (max-width: 768px) {
             .upload-section {
                 grid-template-columns: 1fr;
@@ -363,6 +381,21 @@
         <div class="content">
             <div class="alert info">
                 ℹ️ <strong>Instructions:</strong> Upload both Excel files below. The system will automatically parse features from the Redwood Feature List and personalizations from the Helper Tool Output.
+            </div>
+
+            <!-- Preloaded Data Info -->
+            <div class="preloaded-data">
+                <h4>📊 Expected Data Structure (Based on Patrick's Files):</h4>
+                <ul>
+                    <li><strong>Procurement → Purchasing:</strong> 30 features, 20 personalizations</li>
+                    <li><strong>Procurement → Self Service Procurement:</strong> 0 features, 23 personalizations</li>
+                    <li><strong>Procurement → Sourcing:</strong> 0 features, 12 personalizations</li>
+                    <li><strong>Procurement → Procurement Contracts:</strong> 3 features, 0 personalizations</li>
+                    <li><strong>Order Management → Order Management:</strong> 15 features, 22 personalizations</li>
+                    <li><strong>Order Management → Pricing:</strong> 4 features, 0 personalizations</li>
+                    <li><strong>Maintenance → Maintenance Management:</strong> 0 features, 4 personalizations</li>
+                    <li><strong>Product Management → Product Model:</strong> 0 features, 2 personalizations</li>
+                </ul>
             </div>
 
             <!-- File Upload Section -->
@@ -402,7 +435,7 @@
                     🔍 Process Files & Generate Config
                 </button>
                 <button class="btn btn-secondary" id="downloadConfigBtn" disabled>
-                    📥 Download Config (JSON)
+                    📥 Download Config (Python)
                 </button>
                 <button class="btn btn-secondary" id="downloadPythonBtn" disabled>
                     🐍 Download Python Script
@@ -450,7 +483,7 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Product</th>
+                                <th>Product Group</th>
                                 <th>Module</th>
                                 <th>Features</th>
                                 <th>Personalizations</th>
@@ -489,7 +522,7 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Product</th>
+                                <th>Product Group</th>
                                 <th>Module</th>
                                 <th>Page File</th>
                                 <th>Field</th>
@@ -514,17 +547,6 @@
             helperTool: false
         };
 
-        // Product to Module mapping
-        const productModuleMapping = {
-            'Procurement': ['Purchasing', 'Self Service Procurement', 'Sourcing', 'Procurement Contracts'],
-            'Order Management': ['Order Management', 'Pricing'],
-            'Maintenance': ['Maintenance Management'],
-            'Product Management': ['Product Model'],
-            'Manufacturing': ['Manufacturing'],
-            'Inventory Management': ['Inventory Management'],
-            'Supply Chain Planning': ['Supply Chain Planning']
-        };
-
         // Complexity weights
         const complexityWeights = {
             "SCM Common Components": 0.5,
@@ -543,7 +565,10 @@
             "Supply Chain Planning": 1.2,
             "Product Management": 1.0,
             "Maintenance Management": 1.2,
-            "Product Model": 1.0
+            "Product Model": 1.0,
+            "Procurement Contracts": 1.0,
+            "Sourcing": 1.0,
+            "Self Service Procurement": 1.0
         };
 
         // Initialize event listeners
@@ -649,36 +674,30 @@
 
         function parseFeatureList(data) {
             const features = [];
-            let currentProduct = '';
-            let currentModule = '';
             
-            // Skip header rows, start from row with actual data
-            for (let i = 1; i < data.length; i++) {
+            // Skip header rows (first 2 rows), start from actual data
+            for (let i = 2; i < data.length; i++) {
                 const row = data[i];
                 
-                // Check if this is a data row (has product and module)
-                if (row[1] && row[2]) {
+                // Check if row has valid data (S.no, Product, Module, Feature Name)
+                if (row[0] && row[1] && row[2] && row[3]) {
+                    const sNo = row[0];
                     const product = row[1]?.toString().trim();
                     const module = row[2]?.toString().trim();
                     const featureName = row[3]?.toString().trim();
-                    const updateVersion = row[4]?.toString().trim();
-                    const mandateVersion = row[5]?.toString().trim();
+                    const updateVersion = row[4]?.toString().trim() || '';
+                    const mandateVersion = row[5]?.toString().trim() || '';
                     
-                    if (product && module && featureName && !featureName.startsWith('Redwood')) {
-                        continue; // Skip non-feature rows
-                    }
-                    
-                    if (product && module && featureName) {
-                        // Normalize product/module names
-                        const normalizedProduct = normalizeProductName(product);
-                        const normalizedModule = normalizeModuleName(module);
-                        
+                    // Skip if feature name starts with "Redwood" (we want actual feature names)
+                    // Actually, all features start with "Redwood:", so we include them
+                    if (product && module && featureName && !isNaN(sNo)) {
                         features.push({
-                            product: normalizedProduct,
-                            module: normalizedModule,
+                            sNo: sNo,
+                            product: product,
+                            module: module,
                             featureName: featureName,
-                            updateVersion: updateVersion || '',
-                            mandateVersion: mandateVersion || ''
+                            updateVersion: updateVersion,
+                            mandateVersion: mandateVersion
                         });
                     }
                 }
@@ -702,13 +721,12 @@
                     const sheetNames = workbook.SheetNames;
                     personalizationData = [];
                     
-                    // Parse each sheet
-                    sheetNames.forEach(sheetName => {
-                        const sheet = workbook.Sheets[sheetName];
+                    // Parse the first sheet (Page composer summary)
+                    if (sheetNames.length > 0) {
+                        const sheet = workbook.Sheets[sheetNames[0]];
                         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                        const parsed = parseHelperToolSheet(jsonData, sheetName);
-                        personalizationData.push(...parsed);
-                    });
+                        personalizationData = parseHelperToolSummary(jsonData);
+                    }
                     
                     filesLoaded.helperTool = true;
                     status.className = 'file-status success';
@@ -724,103 +742,33 @@
             reader.readAsArrayBuffer(file);
         }
 
-        function parseHelperToolSheet(data, sheetName) {
+        function parseHelperToolSummary(data) {
             const personalizations = [];
-            let currentProduct = '';
-            let currentModule = '';
             
-            // Look for product/module information in the sheet
-            for (let i = 0; i < data.length; i++) {
+            // Look for the summary table (starts around row 4-5)
+            for (let i = 4; i < data.length; i++) {
                 const row = data[i];
                 
-                // Try to identify product from summary tables
-                if (row[0] && row[1]) {
-                    const cell0 = row[0]?.toString().trim();
-                    const cell1 = row[1]?.toString().trim();
+                // Check if this is a data row with Product Group, Product, and counts
+                if (row[0] && row[1] && row[2] !== undefined && row[3] !== undefined) {
+                    const productGroup = row[0]?.toString().trim();
+                    const product = row[1]?.toString().trim();
+                    const numFiles = parseInt(row[2]) || 0;
+                    const totalPers = parseInt(row[3]) || 0;
                     
-                    // Check for product names in first column
-                    if (cell0.includes('Procurement') || cell0.includes('Order Management') || 
-                        cell0.includes('Maintenance') || cell0.includes('Product Management')) {
-                        currentProduct = normalizeProductName(cell0);
-                        
-                        if (cell1 && !cell1.includes('Personalizations')) {
-                            currentModule = normalizeModuleName(cell1);
-                        }
-                    }
-                }
-                
-                // Look for personalization details (File, Field, Display Name, Personalization)
-                if (row[0] && row[0]?.toString().includes('.jsff.xml')) {
-                    const fileName = row[0]?.toString().trim();
-                    const field = row[1]?.toString().trim() || '';
-                    const displayName = row[2]?.toString().trim() || '';
-                    const personalization = row[3]?.toString().trim() || '';
-                    
-                    if (personalization && !personalization.includes('Page Composer')) {
+                    // Skip if not a valid product row
+                    if (productGroup && product && totalPers > 0) {
                         personalizations.push({
-                            product: currentProduct,
-                            module: currentModule,
-                            fileName: fileName,
-                            field: field,
-                            displayName: displayName,
-                            personalization: personalization
+                            productGroup: productGroup,
+                            module: product,
+                            numFiles: numFiles,
+                            totalPersonalizations: totalPers
                         });
                     }
                 }
             }
             
             return personalizations;
-        }
-
-        function normalizeProductName(name) {
-            if (!name) return 'Unknown';
-            name = name.trim();
-            
-            const mappings = {
-                'Procurement': 'Procurement',
-                'Order Management': 'Order Management',
-                'Maintenance Management': 'Maintenance',
-                'Maintenance': 'Maintenance',
-                'Product Management': 'Product Management',
-                'Product Model': 'Product Management',
-                'Purchasing': 'Procurement',
-                'Self Service Procurement': 'Procurement',
-                'Sourcing': 'Procurement',
-                'Procurement Contracts': 'Procurement',
-                'Pricing': 'Order Management'
-            };
-            
-            for (const [key, value] of Object.entries(mappings)) {
-                if (name.includes(key)) {
-                    return value;
-                }
-            }
-            
-            return name;
-        }
-
-        function normalizeModuleName(name) {
-            if (!name) return 'Unknown';
-            name = name.trim();
-            
-            const mappings = {
-                'Purchasing': 'Purchasing',
-                'Self Service Procurement': 'Self Service Procurement',
-                'Sourcing': 'Sourcing',
-                'Procurement Contracts': 'Procurement Contracts',
-                'Order Management': 'Order Management',
-                'Pricing': 'Pricing',
-                'Maintenance Management': 'Maintenance Management',
-                'Product Model': 'Product Model'
-            };
-            
-            for (const [key, value] of Object.entries(mappings)) {
-                if (name.includes(key)) {
-                    return value;
-                }
-            }
-            
-            return name;
         }
 
         function updateProcessButton() {
@@ -883,14 +831,16 @@
                 featureCounts[key]++;
             });
             
-            // Group personalizations by product/module
+            // Group personalizations by product/module (from summary)
             const persCounts = {};
             personalizationData.forEach(pers => {
-                const key = `${pers.product}|${pers.module}`;
+                // Map product group to product name
+                const product = mapProductGroupToProduct(pers.productGroup);
+                const key = `${product}|${pers.module}`;
                 if (!persCounts[key]) {
                     persCounts[key] = 0;
                 }
-                persCounts[key]++;
+                persCounts[key] = pers.totalPersonalizations;
             });
             
             // Combine into config
@@ -920,6 +870,16 @@
             });
         }
 
+        function mapProductGroupToProduct(productGroup) {
+            const mapping = {
+                'Asset Lifecycle Management': 'Maintenance',
+                'Order Management': 'Order Management',
+                'Procurement': 'Procurement',
+                'Product Management': 'Product Management'
+            };
+            return mapping[productGroup] || productGroup;
+        }
+
         function displayResults() {
             // Update summary cards
             const products = Object.keys(configData);
@@ -928,7 +888,7 @@
             }, 0);
             
             const totalFeatures = featureData.length;
-            const totalPers = personalizationData.length;
+            const totalPers = personalizationData.reduce((sum, p) => sum + p.totalPersonalizations, 0);
             
             document.getElementById('totalProducts').textContent = products.length;
             document.getElementById('totalModules').textContent = modules;
@@ -984,23 +944,17 @@
             // Update personalizations table
             const persBody = document.getElementById('personalizationsTableBody');
             persBody.innerHTML = '';
-            personalizationData.slice(0, 100).forEach(pers => {
+            personalizationData.forEach(pers => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${pers.product}</td>
+                    <td>${pers.productGroup}</td>
                     <td>${pers.module}</td>
-                    <td>${pers.fileName}</td>
-                    <td>${pers.field}</td>
-                    <td>${pers.personalization}</td>
+                    <td>${pers.numFiles} files</td>
+                    <td>-</td>
+                    <td>${pers.totalPersonalizations} personalizations</td>
                 `;
                 persBody.appendChild(row);
             });
-            
-            if (personalizationData.length > 100) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="5" style="text-align: center; color: #666;">... and ${personalizationData.length - 100} more personalizations</td>`;
-                persBody.appendChild(row);
-            }
         }
 
         function generateConfigString() {
