@@ -682,8 +682,8 @@
                 // Check if row has valid data (S.no, Product, Module, Feature Name)
                 if (row[0] && row[1] && row[2] && row[3]) {
                     const sNo = row[0];
-                    const product = row[1]?.toString().trim();
-                    const module = row[2]?.toString().trim();
+                    const product = normalizeProductName(row[1]?.toString().trim());
+                    const module = normalizeModuleName(row[2]?.toString().trim());
                     const featureName = row[3]?.toString().trim();
                     const updateVersion = row[4]?.toString().trim() || '';
                     const mandateVersion = row[5]?.toString().trim() || '';
@@ -868,6 +868,56 @@
                     configData[product][module].personalizations = persCounts[key];
                 }
             });
+        }
+
+        function normalizeProductName(name) {
+            if (!name) return 'Unknown';
+            name = name.trim();
+            
+            // Normalize to title case and handle variations
+            const lowerName = name.toLowerCase();
+            
+            if (lowerName.includes('procurement')) {
+                return 'Procurement';
+            } else if (lowerName.includes('order management')) {
+                return 'Order Management';
+            } else if (lowerName.includes('maintenance')) {
+                return 'Maintenance';
+            } else if (lowerName.includes('product management') || lowerName.includes('product model')) {
+                return 'Product Management';
+            } else if (lowerName.includes('pricing')) {
+                return 'Order Management';
+            }
+            
+            return name;
+        }
+
+        function normalizeModuleName(name) {
+            if (!name) return 'Unknown';
+            name = name.trim();
+            
+            // Normalize to proper case
+            const lowerName = name.toLowerCase();
+            
+            if (lowerName.includes('purchasing')) {
+                return 'Purchasing';
+            } else if (lowerName.includes('self service procurement')) {
+                return 'Self Service Procurement';
+            } else if (lowerName.includes('sourcing')) {
+                return 'Sourcing';
+            } else if (lowerName.includes('procurement contracts')) {
+                return 'Procurement Contracts';
+            } else if (lowerName.includes('order management')) {
+                return 'Order Management';
+            } else if (lowerName.includes('pricing')) {
+                return 'Pricing';
+            } else if (lowerName.includes('maintenance management')) {
+                return 'Maintenance Management';
+            } else if (lowerName.includes('product model')) {
+                return 'Product Model';
+            }
+            
+            return name;
         }
 
         function mapProductGroupToProduct(productGroup) {
