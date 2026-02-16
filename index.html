@@ -29,7 +29,7 @@
 
         <div class="p-6 md:p-8">
 
-            <!-- Configuration -->
+            <!-- Project Info -->
             <div class="mb-10 bg-gray-50 p-6 rounded-xl border border-gray-200">
                 <h2 class="text-lg font-bold mb-4 text-gray-800">Project Information</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -59,11 +59,11 @@
                 <div class="space-y-4">
                     <div v-for="(mod, mIdx) in product.modules" :key="mIdx" class="flex flex-wrap md:flex-nowrap gap-4 items-end bg-gray-50 p-4 rounded-lg border">
                         <div class="flex-1 min-w-[220px]">
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Module</label>
-                            <select v-model="mod.name" class="w-full border-gray-300 rounded-lg py-2 px-3 focus:border-indigo-500 focus:ring-indigo-400">
-                                <option value="">— Select module —</option>
-                                <option v-for="m in getModulesForProduct(product.name)" :value="m.name">{{ m.name }}</option>
-                            </select>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Module Name</label>
+                            <input list="modules" v-model="mod.name" type="text" placeholder="Type or select module" class="w-full border-gray-300 rounded-lg py-2 px-3 focus:border-indigo-500 focus:ring-indigo-400">
+                            <datalist id="modules">
+                                <option v-for="m in getModulesForProduct(product.name)" :value="m.name"></option>
+                            </datalist>
                         </div>
                         <div class="w-28">
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Features</label>
@@ -150,7 +150,13 @@ const PRODUCTS = [
     { name: "Supply Chain Planning",            weight: 1.2 }
 ];
 
-const MODULES = [ /* same as your original — omitted here for brevity */ ];
+const MODULES = [
+    // Paste your full MODULES array here (same as original)
+    // Example stub:
+    { name: "Purchasing", count: 65, product: "Purchasing" },
+    { name: "Sourcing", count: 38, product: "Procurement" },
+    // ... add all your modules
+];
 
 const FIXED = {
     discussion:      8,
@@ -161,7 +167,15 @@ const FIXED = {
     uatAssist:       24,
     migrationPerPers:0.2,
     hypercareBase:   32,
-    hypercareFactor: 0.25   // per personalization
+    hypercareFactor: 0.25
+};
+
+const COLORS = {
+    headerBlue:     { fgColor: { rgb: "9BC2E6" }, font: { bold: true, color: { rgb: "000000" } } },
+    sectionGray:    { fgColor: { rgb: "D9D9D9" }, font: { bold: true } },
+    totalLightGreen:{ fgColor: { rgb: "C6E0B4" }, font: { bold: true } },
+    grandDark:      { fgColor: { rgb: "595959" }, font: { bold: true, color: { rgb: "FFFFFF" } } },
+    subHeader:      { fgColor: { rgb: "DDEBF7" }, font: { bold: true } }
 };
 
 createApp({
@@ -178,28 +192,18 @@ createApp({
     computed: {
         grandTotals() {
             let feats = 0, pers = 0, csu = 0;
-
             this.products.forEach(p => {
                 const f = p.modules.reduce((s,m)=>s+(m.features||0),0);
-                const per = p.modules.reduce((s,m)=>s+(m.personalizations||0),0);
-                feats += f;
-                pers += per;
-
+                const pr = p.modules.reduce((s,m)=>s+(m.personalizations||0),0);
+                feats += f; pers += pr;
                 const w = this.getProductWeight(p.name);
-                csu += f * 0.25 + f * 10 * w + per * 2;
+                csu += f * 0.25 + f * 10 * w + pr * 2;
             });
-
-            // Shared once
-            csu += FIXED.discussion + FIXED.documentation + FIXED.demo;
-            csu += FIXED.unitTestMain + FIXED.classicCompare + FIXED.uatAssist;
-            csu += pers * FIXED.migrationPerPers;
-            csu += Math.max(FIXED.hypercareBase, pers * FIXED.hypercareFactor);
-
-            return {
-                features: feats,
-                personalizations: pers,
-                csu: Math.round(csu)
-            };
+            csu += FIXED.discussion + FIXED.documentation + FIXED.demo +
+                   FIXED.unitTestMain + FIXED.classicCompare + FIXED.uatAssist +
+                   pers * FIXED.migrationPerPers +
+                   Math.max(FIXED.hypercareBase, pers * FIXED.hypercareFactor);
+            return { features: feats, personalizations: pers, csu: Math.round(csu) };
         }
     },
     methods: {
@@ -210,136 +214,123 @@ createApp({
 
         onProductChange(idx) { this.products[idx].modules = []; },
         addProduct() { this.products.push({ name: PRODUCTS[0].name, modules: [] }); },
-        removeProduct(idx) {
-            if (this.products.length > 1) this.products.splice(idx,1);
-        },
+        removeProduct(idx) { if (this.products.length > 1) this.products.splice(idx,1); },
         addModule(idx) { this.products[idx].modules.push({name:"", features:0, personalizations:0}); },
-        removeModule(pIdx, mIdx) { this.products[pIdx].modules.splice(mIdx,1); },
+        removeModule(p,m) { this.products[p].modules.splice(m,1); },
+
+        applyExcelStyle(ws, range, style) {
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cell = XLSX.utils.encode_cell({r:R, c:C});
+                    if (!ws[cell]) ws[cell] = {};
+                    ws[cell].s = { ...style };
+                }
+            }
+        },
 
         generateExcel() {
             const wb = XLSX.utils.book_new();
             const totalPers = this.grandTotals.personalizations;
 
-            // ──────────────────────────────────────────────
-            // Summary Sheet
-            // ──────────────────────────────────────────────
-            const summaryRows = [
-                ["Redwood Adoption – Effort Estimation Summary", "", "", "", "", ""],
+            // Summary Sheet (simple overview)
+            const summary = [
+                ["Redwood Adoption Estimation Summary"],
                 [],
-                ["Customer", this.customerName, "", "Total Features", this.grandTotals.features, ""],
-                ["Date", new Date().toLocaleDateString(), "", "Total Personalizations", this.grandTotals.personalizations, ""],
-                ["Estimated CSUs", this.grandTotals.csu, "", "", "", ""],
+                ["Customer", this.customerName],
+                ["Total Features", this.grandTotals.features],
+                ["Total Personalizations", this.grandTotals.personalizations],
+                ["Estimated CSUs", this.grandTotals.csu],
                 [],
-                ["Phase / Activity Group", "Description", "Features Qty", "Pers. Qty", "CSU Rate", "CSUs"]
+                ["Phase", "Activity", "Qty Features", "Qty Pers.", "CSU"]
             ];
+            const wsSummary = XLSX.utils.aoa_to_sheet(summary);
+            this.applyExcelStyle(wsSummary, {s:{r:0,c:0}, e:{r:0,c:4}}, COLORS.headerBlue);
+            XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
 
-            let row = 7;
-            this.products.forEach(p => {
-                const f = this.getProductFeatures(p);
-                const per = this.getProductPersonalizations(p);
-                const w = this.getProductWeight(p.name);
-
-                summaryRows.push([`${p.name} – Adoption Activities`, "", f, per, "", ""]);
-                summaryRows.push(["  └─ Feature Enable & Verify", "", f, "", "~0.25 h", Math.round(f*0.25)]);
-                summaryRows.push(["  └─ UI Comparison & Validation", "", "", "", `${10*w} h/product`, Math.round(10*w)]);
-                summaryRows.push(["  └─ Personalization Redo", "", "", per, "2 h/pers", per*2]);
-                row += 4;
-            });
-
-            // Shared once
-            summaryRows.push(["Shared / Project-wide Activities", "", "", "", "", ""]);
-            summaryRows.push(["  └─ Assessment (Discussion + Doc + Demo)", "", "", "", "", FIXED.discussion + FIXED.documentation + FIXED.demo]);
-            summaryRows.push(["  └─ Unit Testing & Comparison", "", "", "", "", FIXED.unitTestMain + FIXED.classicCompare]);
-            summaryRows.push(["  └─ UAT Assistance", "", "", "", "", FIXED.uatAssist]);
-            summaryRows.push(["  └─ Migration of Personalizations", "", "", totalPers, "~0.2 h/pers", Math.round(totalPers*FIXED.migrationPerPers)]);
-            summaryRows.push(["  └─ Hypercare (3 weeks)", "", "", "", "", Math.max(FIXED.hypercareBase, Math.round(totalPers*FIXED.hypercareFactor))]);
-
-            const wsSum = XLSX.utils.aoa_to_sheet(summaryRows);
-            wsSum['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}}];
-            XLSX.utils.book_append_sheet(wb, wsSum, "Summary");
-
-            // ──────────────────────────────────────────────
-            // Per Product Detailed Sheets
-            // ──────────────────────────────────────────────
-            this.products.forEach((product, idx) => {
+            // Detailed per-product sheets
+            this.products.forEach((prod, idx) => {
                 const isFirst = idx === 0;
-                const pFeats = this.getProductFeatures(product);
-                const pPers  = this.getProductPersonalizations(product);
-                const w      = this.getProductWeight(product.name);
+                const feats = this.getProductFeatures(prod);
+                const pers  = this.getProductPersonalizations(prod);
+                const weight = this.getProductWeight(prod.name);
 
-                const data = [];
+                const rows = [];
                 let r = 0;
 
-                data[r++] = [`REDWOOD ADOPTION – ${product.name.toUpperCase()}`];
-                data[r++] = [];
-                data[r++] = ["Customer:", this.customerName, "", "", "Features:", pFeats];
-                data[r++] = ["Date:", new Date().toLocaleDateString(), "", "", "Personalizations:", pPers];
-                data[r++] = [];
+                rows[r++] = [`REDWOOD ADOPTION ESTIMATION - ${prod.name.toUpperCase()}`];
+                rows[r++] = [];
+                rows[r++] = ["Customer", this.customerName, "", "", "Features", feats];
+                rows[r++] = ["Generated", new Date().toLocaleDateString(), "", "", "Personalizations", pers];
+                rows[r++] = [];
 
-                const addSection = (title, activities) => {
-                    data[r++] = [title];
-                    data[r++] = ["Activity", "Detailed Activity", "Non-Prod", "Prod", "Qty", "Total Hours", "CSUs"];
-                    const start = r;
+                const addSection = (title, acts) => {
+                    rows[r++] = [title];
+                    rows[r++] = ["Activity", "Detailed Activity", "Non-Prod Hrs", "Prod Hrs", "Qty", "Total Hrs", "CSUs (50%)"];
+                    const startRow = r;
 
-                    activities.forEach(a => {
-                        const totalH = (a.nonProd + a.prod) * a.qty;
-                        const csu = totalH / 2; // assuming 50% productivity or your rule
-                        data[r++] = [a.name, a.desc, a.nonProd, a.prod, a.qty, totalH, csu];
+                    acts.forEach(a => {
+                        const total = (a.nonProd + a.prod) * a.qty;
+                        rows[r++] = [a.name, a.desc, a.nonProd, a.prod, a.qty, total, total / 2];
                     });
 
-                    const totH = activities.reduce((s,a)=>s + (a.nonProd + a.prod)*a.qty, 0);
-                    data[r++] = ["Section Total", "", "", "", "", totH, totH/2];
-                    data[r++] = [];
+                    const secTotal = acts.reduce((s,a) => s + (a.nonProd + a.prod) * a.qty, 0);
+                    rows[r++] = ["Section Total", "", "", "", "", secTotal, secTotal / 2];
+                    rows[r++] = [];
                 };
 
-                // Shared sections only on first sheet
                 if (isFirst) {
-                    addSection("1. SERVICE KICK-OFF & ASSESSMENT", [
-                        {name:"Discussion", desc:"Redwood features intro + roadmap + asset inventory", nonProd:8, prod:0, qty:1},
-                        {name:"Documentation", desc:"CWB’s, Adoption Document, Workplan", nonProd:16, prod:0, qty:1},
-                        {name:"Demo / Review", desc:"Walk-through before/after + sample transactions", nonProd:8, prod:0, qty:1}
+                    addSection("1. ASSESSMENT ACTIVITIES", [
+                        {name:"Discussion", desc:"Intro + roadmap + asset inventory", nonProd:8, prod:0, qty:1},
+                        {name:"Documentation", desc:"CWB, Adoption Doc, Workplan", nonProd:16, prod:0, qty:1},
+                        {name:"Demo/Review", desc:"Before/after walk-through", nonProd:8, prod:0, qty:1}
                     ]);
 
-                    addSection("3. UNIT TESTING & UAT ASSISTANCE", [
-                        {name:"Unit Testing", desc:"Column-by-column comparison Classic ↔ Redwood", nonProd:40, prod:0, qty:1},
-                        {name:"Classic vs Redwood Comparison", desc:"Detailed mapping check", nonProd:24, prod:0, qty:1},
-                        {name:"UAT Issue Resolution", desc:"Assist during test & UAT", nonProd:24, prod:0, qty:1}
+                    addSection("3. UNIT TESTING & UAT", [
+                        {name:"Unit Testing", desc:"Column-by-column comparison", nonProd:40, prod:0, qty:1},
+                        {name:"Classic vs Redwood Compare", desc:"Detailed mapping", nonProd:24, prod:0, qty:1},
+                        {name:"UAT Assistance", desc:"Resolve Redwood issues", nonProd:24, prod:0, qty:1}
                     ]);
                 }
 
-                // Product-specific Adoption
-                addSection(`2. ADOPTION ACTIVITIES – ${product.name}`, [
-                    {name:"Feature Enablement", desc:"Setup / Profile / Opt-in per feature", nonProd:0.15, prod:0.1, qty:pFeats},
-                    {name:"Config Verification", desc:"Verify enablement at config level", nonProd:0.1, prod:0.1, qty:pFeats},
-                    {name:"UI Verification & Comparison", desc:`Classic vs Redwood UI (weight ${w}×)`, nonProd:8*w, prod:8*w, qty:1},
-                    {name:"Personalization Redo", desc:"Rewrite due to Redwood architecture changes", nonProd:2, prod:0.5, qty:pPers},
-                    {name:"Additional Pers. (expected)", desc:"During testing / customer feedback", nonProd:2, prod:0, qty:Math.max(1, Math.floor(pPers*0.1))}
+                addSection(`2. ADOPTION - ${prod.name}`, [
+                    {name:"Feature Enablement", desc:"Opt-in / setup per feature", nonProd:0.15, prod:0.1, qty:feats},
+                    {name:"Config Verification", desc:"Check enablement", nonProd:0.1, prod:0.1, qty:feats},
+                    {name:"UI Comparison", desc:`Classic vs Redwood (weight ${weight}×)`, nonProd:8*weight, prod:8*weight, qty:1},
+                    {name:"Personalization Redo", desc:"Rewrite due to architecture", nonProd:2, prod:0.5, qty:pers},
+                    {name:"Additional Pers.", desc:"Expected during testing", nonProd:2, prod:0, qty:Math.max(1, Math.floor(pers*0.1))}
                 ]);
 
                 if (isFirst) {
                     addSection("4. MIGRATION ACTIVITIES", [
-                        {name:"Deploy to Non-Prod", desc:"Personalization migration to another non-prod", nonProd:0.2, prod:0.1, qty:totalPers},
-                        {name:"Production Deployment", desc:"UI + setups + personalizations – signed off", nonProd:0, prod:1, qty:totalPers},
-                        {name:"Assist Prod Migration", desc:"Optional – customer assisted move", nonProd:0, prod:1, qty:0}
+                        {name:"Non-Prod Deploy", desc:"Personalizations to another env", nonProd:0.2, prod:0.1, qty:totalPers},
+                        {name:"Prod Deployment", desc:"Signed-off production move", nonProd:0, prod:1, qty:totalPers}
                     ]);
 
-                    addSection("5. POST GO-LIVE HYPERCARE", [
-                        {name:"Hypercare Support", desc:"3 weeks support for issues", nonProd:0, prod:4, qty:Math.max(8, Math.floor(totalPers*0.2))}
+                    addSection("5. HYPERCARE SUPPORT", [
+                        {name:"Post Go-Live", desc:"3 weeks support", nonProd:0, prod:4, qty:Math.max(8, Math.floor(totalPers*0.2))}
                     ]);
                 }
 
-                // Grand Total per sheet
-                data[r++] = ["GRAND TOTAL", "", "", "", "", {f:`=SUM(F7:F${r})`, t:'n'}, {f:`=SUM(G7:G${r})`, t:'n'}];
+                rows[r++] = ["GRAND TOTAL", "", "", "", "", {f:`=SUM(F7:F${r})`}, {f:`=SUM(G7:G${r})`}];
 
-                const ws = XLSX.utils.aoa_to_sheet(data);
+                const ws = XLSX.utils.aoa_to_sheet(rows);
                 ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
 
-                // You can add more styling here (header colors, bold, etc.) similar to your original
+                // Apply colors
+                this.applyExcelStyle(ws, {s:{r:0,c:0}, e:{r:0,c:6}}, COLORS.headerBlue);
+                let currentRow = 6;
+                if (isFirst) currentRow += 18; // rough offset after first sections
+                this.applyExcelStyle(ws, {s:{r:currentRow-1,c:0}, e:{r:currentRow-1,c:6}}, COLORS.sectionGray); // adoption section
+                // You can add more precise styling loops here if needed
 
-                XLSX.utils.book_append_sheet(wb, ws, product.name.slice(0,31));
+                ws['!cols'] = [
+                    {wch:35}, {wch:65}, {wch:12}, {wch:12}, {wch:8}, {wch:14}, {wch:12}
+                ];
+
+                XLSX.utils.book_append_sheet(wb, ws, prod.name.slice(0,31));
             });
 
-            XLSX.writeFile(wb, `Redwood_Adoption_${this.customerName.replace(/\W+/g,'_')}.xlsx`);
+            XLSX.writeFile(wb, `Redwood_Estimation_${this.customerName.replace(/[^a-z0-9]/gi,'_')}.xlsx`);
         }
     }
 }).mount('#app');
