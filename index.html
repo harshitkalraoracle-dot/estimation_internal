@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -424,7 +425,6 @@
                 
                 let grandTotalFeatures = 0;
                 let grandTotalPers = 0;
-                let summaryStartRow = 1;
 
                 this.products.forEach((product, pIdx) => {
                     const pFeatures = product.modules.reduce((sum, m) => sum + (m.features || 0), 0);
@@ -516,8 +516,8 @@
                     const pData = [];
                     let rowNum = 0;
 
-                    // Title
-                    pData.push([`REDWOOD ADOPTION ESTIMATION - ${product.name.toUpperCase()}`]);
+                    // Title - merged across all columns
+                    pData.push([{v: `REDWOOD ADOPTION ESTIMATION - ${product.name.toUpperCase()}`, t: 's'}]);
                     rowNum++;
                     pData.push([]);
                     rowNum++;
@@ -525,57 +525,67 @@
                     // Customer info
                     pData.push(["Customer:", this.customerName, "", "", "Features:", pFeatures]);
                     rowNum++;
-                    pData.push(["Date:", "=TODAY()", "", "", "Personalization:", pPers]);
+                    pData.push(["Date:", new Date(), "", "", "Personalization:", pPers]);
                     rowNum++;
                     pData.push([]);
                     rowNum++;
 
                     let sectionNum = 1;
-                    let sectionStartRow = 0;
 
-                    // 1. ASSESSMENT ACTIVITIES (First Product Only)
-                    if (isFirstChild) {
-                        sectionStartRow = rowNum;
-                        pData.push(["1. ASSESSMENT ACTIVITIES"]);
+                    // Helper function to add section with proper formatting
+                    const addSection = (title, activities, startRow) => {
+                        // Section header (gray, centered)
+                        pData.push([{v: title, t: 's'}]);
                         rowNum++;
+                        
+                        // Table headers (blue)
                         pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
                         rowNum++;
                         
-                        const assessmentActivities = [
-                            { name: "Discussion", desc: "Introduction of Redwood Features along with redwood roadmap of Supply Chain. Prepare Inventory of assets impacted, Report and the Workplan and Review Workplan with the Customer", nonProd: 8, prod: 0, qty: 1 },
-                            { name: "Documentation", desc: "This covers various documentation like CWB's and Adoption Document", nonProd: 16, prod: 0, qty: 1 },
-                            { name: "Demo/Review", desc: "Walk Through of Applicable Feature Before and After Adoption along with few transactions in the system", nonProd: 8, prod: 0, qty: 1 }
-                        ];
-
-                        const assessmentDataRowStart = rowNum;
-                        assessmentActivities.forEach((act) => {
+                        const dataStartRow = rowNum;
+                        
+                        // Activity rows
+                        activities.forEach((act) => {
                             pData.push([
                                 act.name,
                                 act.desc,
                                 act.nonProd,
                                 act.prod,
                                 act.qty,
-                                `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
-                                `=F${rowNum + 1}/2`
+                                {f: `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`, v: (act.nonProd + act.prod) * act.qty},
+                                {f: `=F${rowNum + 1}/2`, v: ((act.nonProd + act.prod) * act.qty) / 2}
                             ]);
                             rowNum++;
                         });
 
-                        // Section Total
-                        pData.push(["Section Total", "", "", "", "", `=SUM(F${assessmentDataRowStart + 1}:F${rowNum})`, `=SUM(G${assessmentDataRowStart + 1}:G${rowNum})`]);
+                        // Section Total (light gray, right aligned)
+                        const totalRow = rowNum + 1;
+                        pData.push([
+                            {v: "Section Total", t: 's'},
+                            "",
+                            "",
+                            "",
+                            "",
+                            {f: `=SUM(F${dataStartRow}:F${totalRow - 1})`, v: activities.reduce((sum, act) => sum + (act.nonProd + act.prod) * act.qty, 0)},
+                            {f: `=SUM(G${dataStartRow}:G${totalRow - 1})`, v: activities.reduce((sum, act) => sum + ((act.nonProd + act.prod) * act.qty) / 2, 0)}
+                        ]);
                         rowNum++;
                         pData.push([]);
                         rowNum++;
+                    };
+
+                    // 1. ASSESSMENT ACTIVITIES (First Product Only)
+                    if (isFirstChild) {
+                        const assessmentActivities = [
+                            { name: "Discussion", desc: "Introduction of Redwood Features along with redwood roadmap of Supply Chain. Prepare Inventory of assets impacted, Report and the Workplan and Review Workplan with the Customer", nonProd: 8, prod: 0, qty: 1 },
+                            { name: "Documentation", desc: "This covers various documentation like CWB's and Adoption Document", nonProd: 16, prod: 0, qty: 1 },
+                            { name: "Demo/Review", desc: "Walk Through of Applicable Feature Before and After Adoption along with few transactions in the system", nonProd: 8, prod: 0, qty: 1 }
+                        ];
+                        addSection("1. ASSESSMENT ACTIVITIES", assessmentActivities, rowNum);
                         sectionNum++;
                     }
 
                     // 2. ADOPTION ACTIVITIES
-                    sectionStartRow = rowNum;
-                    pData.push([`${sectionNum}. ADOPTION ACTIVITIES - ${product.name.toUpperCase()}`]);
-                    rowNum++;
-                    pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
-                    rowNum++;
-                    
                     const adoptionActivities = [
                         { name: "Features Enablement", desc: "Enabling Feature by Feature by setup, Profile option, Opt-in Enablement", nonProd: 0.1, prod: 0.1, qty: pFeatures },
                         { name: "Verification of Enabled Features at Config Level", desc: "Once All the features are enabled, verified all features enablement", nonProd: 0.1, prod: 0.1, qty: pFeatures },
@@ -583,133 +593,52 @@
                         { name: "Enablement of Personalization", desc: "Redo personalizations. With the shift to the Redwood architecture, many existing personalizations from the Classic version will not automatically migrate due to structural differences", nonProd: 2, prod: 0, qty: pPers },
                         { name: "Additional Personalization - Expected", desc: "Perform Additional personalization based on customer testing and inputs. This is again during testing", nonProd: 2, prod: 0, qty: Math.max(1, Math.floor(pPers * 0.1)) }
                     ];
-
-                    const adoptionDataRowStart = rowNum;
-                    adoptionActivities.forEach((act) => {
-                        pData.push([
-                            act.name,
-                            act.desc,
-                            act.nonProd,
-                            act.prod,
-                            act.qty,
-                            `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
-                            `=F${rowNum + 1}/2`
-                        ]);
-                        rowNum++;
-                    });
-
-                    pData.push(["Section Total", "", "", "", "", `=SUM(F${adoptionDataRowStart + 1}:F${rowNum})`, `=SUM(G${adoptionDataRowStart + 1}:G${rowNum})`]);
-                    rowNum++;
-                    pData.push([]);
-                    rowNum++;
+                    addSection(`${sectionNum}. ADOPTION ACTIVITIES - ${product.name.toUpperCase()}`, adoptionActivities, rowNum);
                     sectionNum++;
 
                     // 3. UNIT TESTING (First Product Only)
                     if (isFirstChild) {
-                        sectionStartRow = rowNum;
-                        pData.push([`${sectionNum}. UNIT TESTING ACTIVITIES AND UAT ASSISTANCE`]);
-                        rowNum++;
-                        pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
-                        rowNum++;
-                        
                         const uatActivities = [
                             { name: "Perform Unit Testing with and without personalization involved", desc: "Perform a detailed column-by-column comparison between Classic and Redwood to confirm that all data points and configurations are accurately mapped, helping ensure that no field, functionality, or dependency is missed during the transition", nonProd: 40, prod: 0, qty: 1 },
                             { name: "Comparison between Classic vs Redwood - W.O", desc: "Column by Column comparison between Classic and Redwood to ensure everything is covered", nonProd: 24, prod: 0, qty: 1 },
                             { name: "Assist in Test instance and UAT to resolve any Redwood issues raised during Testing", desc: "Assist in Test instance and UAT to resolve any Redwood issues raised during Testing", nonProd: 24, prod: 0, qty: 1 }
                         ];
-
-                        const uatDataRowStart = rowNum;
-                        uatActivities.forEach((act) => {
-                            pData.push([
-                                act.name,
-                                act.desc,
-                                act.nonProd,
-                                act.prod,
-                                act.qty,
-                                `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
-                                `=F${rowNum + 1}/2`
-                            ]);
-                            rowNum++;
-                        });
-
-                        pData.push(["Section Total", "", "", "", "", `=SUM(F${uatDataRowStart + 1}:F${rowNum})`, `=SUM(G${uatDataRowStart + 1}:G${rowNum})`]);
-                        rowNum++;
-                        pData.push([]);
-                        rowNum++;
+                        addSection(`${sectionNum}. UNIT TESTING ACTIVITIES AND UAT ASSISTANCE`, uatActivities, rowNum);
                         sectionNum++;
                     }
 
                     // 4. MIGRATION ACTIVITIES (First Product Only)
                     if (isFirstChild) {
-                        sectionStartRow = rowNum;
-                        pData.push([`${sectionNum}. MIGRATION ACTIVITIES`]);
-                        rowNum++;
-                        pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
-                        rowNum++;
-                        
                         const migrationActivities = [
                             { name: "Configure Setups and Deploy Personalization to another non-Prod environment as per customer environment selected", desc: "Configure Setups and Deploy Personalization to another non-Prod environment as per customer environment selected", nonProd: 0.1, prod: 0.1, qty: totalPersonalizationsAllProducts },
                             { name: "Configuration of Setups and Deployment of Personalization to Prod environment", desc: "Production Migration of UI, setups and Personalizations done and signed off by customer", nonProd: 0, prod: 1, qty: totalPersonalizationsAllProducts },
                             { name: "Assist Customer in Configuration of Setups and Deployment of Personalization to Prod environment (Optional)", desc: "Migration to production environment depending on customer's discussion. In this a migration documentation will be provided and assist customer in Moving to Redwood for Production", nonProd: 0, prod: 1, qty: 0 }
                         ];
-
-                        const migrationDataRowStart = rowNum;
-                        migrationActivities.forEach((act) => {
-                            pData.push([
-                                act.name,
-                                act.desc,
-                                act.nonProd,
-                                act.prod,
-                                act.qty,
-                                `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
-                                `=F${rowNum + 1}/2`
-                            ]);
-                            rowNum++;
-                        });
-
-                        pData.push(["Section Total", "", "", "", "", `=SUM(F${migrationDataRowStart + 1}:F${rowNum})`, `=SUM(G${migrationDataRowStart + 1}:G${rowNum})`]);
-                        rowNum++;
-                        pData.push([]);
-                        rowNum++;
+                        addSection(`${sectionNum}. MIGRATION ACTIVITIES`, migrationActivities, rowNum);
                         sectionNum++;
                     }
 
                     // 5. HYPERCARE SUPPORT (First Product Only)
                     if (isFirstChild) {
-                        sectionStartRow = rowNum;
-                        pData.push([`${sectionNum}. POST-GO-LIVE HYPERCARE SUPPORT`]);
-                        rowNum++;
-                        pData.push(["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"]);
-                        rowNum++;
-                        
                         const hypercareQty = Math.max(8, Math.floor(totalPersonalizationsAllProducts * 0.2));
                         
                         const hypercareActivities = [
                             { name: "Post Go-live Support", desc: "Hypercare for 3 weeks to support all the requirement and issues", nonProd: 0, prod: 4, qty: hypercareQty }
                         ];
-
-                        const hypercareDataRowStart = rowNum;
-                        hypercareActivities.forEach((act) => {
-                            pData.push([
-                                act.name,
-                                act.desc,
-                                act.nonProd,
-                                act.prod,
-                                act.qty,
-                                `=(C${rowNum + 1}+D${rowNum + 1})*E${rowNum + 1}`,
-                                `=F${rowNum + 1}/2`
-                            ]);
-                            rowNum++;
-                        });
-
-                        pData.push(["Section Total", "", "", "", "", `=SUM(F${hypercareDataRowStart + 1}:F${rowNum})`, `=SUM(G${hypercareDataRowStart + 1}:G${rowNum})`]);
-                        rowNum++;
-                        pData.push([]);
-                        rowNum++;
+                        addSection(`${sectionNum}. POST-GO-LIVE HYPERCARE SUPPORT`, hypercareActivities, rowNum);
                     }
 
-                    // GRAND TOTAL
-                    pData.push(["GRAND TOTAL", "", "", "", "", `=SUM(F2:F${rowNum + 1})`, `=SUM(G2:G${rowNum + 1})`]);
+                    // GRAND TOTAL (dark gray)
+                    const grandTotalRow = rowNum + 1;
+                    pData.push([
+                        {v: "GRAND TOTAL", t: 's'},
+                        "",
+                        "",
+                        "",
+                        "",
+                        {f: `=SUM(F2:F${grandTotalRow - 1})`, v: 0},
+                        {f: `=SUM(G2:G${grandTotalRow - 1})`, v: 0}
+                    ]);
 
                     const wsProduct = XLSX.utils.aoa_to_sheet(pData);
                     
@@ -726,32 +655,35 @@
                     
                     // Apply styles to all rows
                     for (let R = 0; R <= range.e.r; ++R) {
-                        // Section headers (gray)
-                        if (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})] && 
-                            wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v && 
-                            (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v.toString().match(/^\d\./) || 
-                             wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v.toString().includes("REDWOOD"))) {
-                            if (!wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].s) {
-                                this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.sectionGray);
+                        const cellA = wsProduct[XLSX.utils.encode_cell({r: R, c: 0})];
+                        
+                        // Check if this is a section header (starts with number and period, or contains "REDWOOD")
+                        if (cellA && cellA.v) {
+                            const cellValue = cellA.v.toString();
+                            
+                            // Section headers (gray, centered)
+                            if (cellValue.match(/^\d\./) || cellValue.includes("REDWOOD ADOPTION ESTIMATION")) {
+                                if (R !== 0) { // Skip title row (already styled)
+                                    this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.sectionGray);
+                                }
                             }
-                        }
-                        
-                        // Table headers (blue)
-                        if (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})] && 
-                            wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v === "Activity") {
-                            this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.headerBlue);
-                        }
-                        
-                        // Section totals (light gray)
-                        if (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})] && 
-                            wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v === "Section Total") {
-                            this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.subtotalLight);
-                        }
-                        
-                        // Grand total (dark gray)
-                        if (wsProduct[XLSX.utils.encode_cell({r: R, c: 0})] && 
-                            wsProduct[XLSX.utils.encode_cell({r: R, c: 0})].v === "GRAND TOTAL") {
-                            this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.grandTotalDark);
+                            
+                            // Table headers (blue)
+                            if (cellValue === "Activity") {
+                                this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.headerBlue);
+                            }
+                            
+                            // Section totals (light gray, right aligned for first column)
+                            if (cellValue === "Section Total") {
+                                // Apply subtotal style but with center alignment for the whole row
+                                const subtotalStyle = {...styles.subtotalLight, alignment: { horizontal: "center", vertical: "center" }};
+                                this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, subtotalStyle);
+                            }
+                            
+                            // Grand total (dark gray)
+                            if (cellValue === "GRAND TOTAL") {
+                                this.applyStyle(wsProduct, {s: {r: R, c: 0}, e: {r: R, c: 6}}, styles.grandTotalDark);
+                            }
                         }
                         
                         // Apply regular borders to remaining cells
@@ -778,3 +710,4 @@
 
 </body>
 </html>
+```
