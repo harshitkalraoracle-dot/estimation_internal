@@ -14,6 +14,7 @@ body {
     color: #333;
 }
 .hidden { display: none !important; }
+
 /* Login Screen */
 .login-container {
     max-width: 400px;
@@ -24,7 +25,7 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     text-align: center;
 }
-.login-container h3 { margin-top: 0; }
+.login-container h3 { margin-top: 0; color: #333; }
 .login-container input {
     width: 100%;
     padding: 10px;
@@ -44,7 +45,9 @@ body {
     font-weight: bold;
 }
 .btn-user { background: #0056b3; color: white; }
+.btn-user:hover { background: #004494; }
 .btn-admin { background: #fff; color: #333; border: 1px solid #333; }
+.btn-admin:hover { background: #f0f0f0; }
 .btn-logout {
     background: #fff;
     color: #333;
@@ -53,6 +56,8 @@ body {
     cursor: pointer;
     font-weight: bold;
 }
+.btn-logout:hover { background: #f0f0f0; }
+
 /* App Screen */
 .header {
     background: #333;
@@ -62,6 +67,8 @@ body {
     justify-content: space-between;
     align-items: center;
 }
+.header h2 { margin: 0; font-size: 20px; }
+
 .dashboard {
     display: flex;
     gap: 20px;
@@ -71,12 +78,15 @@ body {
     flex-wrap: wrap;
 }
 .dashboard div { display: flex; flex-direction: column; }
+.dashboard label { font-weight: bold; margin-bottom: 5px; font-size: 13px; }
 .dashboard input {
     padding: 5px;
     border: 1px solid #ccc;
     border-radius: 3px;
     background: #eee;
+    width: 200px;
 }
+
 .tabs {
     display: flex;
     background: #fff;
@@ -88,13 +98,17 @@ body {
     cursor: pointer;
     font-weight: bold;
     border-bottom: 3px solid transparent;
+    transition: all 0.2s;
 }
+.tab:hover { background: #f0f0f0; }
 .tab.active {
     border-bottom: 3px solid #0056b3;
     color: #0056b3;
 }
+
 .tab-content { display: none; padding: 20px; }
 .tab-content.active { display: block; }
+
 /* Sections & Tables */
 .section {
     background: #fff;
@@ -115,6 +129,7 @@ body {
     padding: 10px 15px;
     font-weight: bold;
 }
+
 table { width: 100%; border-collapse: collapse; }
 th, td {
     padding: 8px;
@@ -122,17 +137,37 @@ th, td {
     text-align: center;
     font-size: 14px;
 }
-th { background: #f9f9f9; font-weight: bold; }
-td.task-name { text-align: left; }
+th { 
+    background: #9bc2e6; 
+    font-weight: bold; 
+    color: #fff;
+}
+td.task-name { text-align: left; font-weight: 500; }
 td.task-details { text-align: left; font-size: 13px; color: #666; }
+
 input[type="number"] {
     width: 60px;
     padding: 4px;
     text-align: center;
     border: 1px solid #ccc;
+    border-radius: 3px;
 }
-tr.section-total { background: #c6efce; font-weight: bold; }
-tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
+
+tr.section-total { 
+    background: #e7e6e6; 
+    font-weight: bold; 
+}
+tr.grand-total { 
+    background: #595959; 
+    font-weight: bold; 
+    font-size: 15px;
+    color: #fff;
+}
+tr.product-total {
+    background: #c6e0b4;
+    font-weight: bold;
+}
+
 .btn-download {
     background: #0056b3;
     color: white;
@@ -142,8 +177,10 @@ tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
     cursor: pointer;
     font-weight: bold;
     margin: 10px;
+    font-size: 14px;
 }
 .btn-download:hover { background: #004494; }
+
 .module-toggle-btn {
     padding: 4px 12px;
     border: 1px solid #ccc;
@@ -151,10 +188,67 @@ tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
     cursor: pointer;
     font-size: 12px;
     background: #fff;
+    transition: all 0.2s;
 }
-.module-toggle-btn.selected { background: #e8f5e9; border-color: #2e7d32; color: #2e7d32; font-weight: bold; }
-.module-toggle-btn.unselected { background: #ffebee; border-color: #c62828; color: #c62828; font-weight: bold; }
-.admin-controls { background: #f9f9f9; padding: 15px; border: 1px solid #ccc; margin-bottom: 20px; }
+.module-toggle-btn.selected { 
+    background: #e8f5e9; 
+    border-color: #2e7d32; 
+    color: #2e7d32; 
+    font-weight: bold; 
+}
+.module-toggle-btn.unselected { 
+    background: #ffebee; 
+    border-color: #c62828; 
+    color: #c62828; 
+    font-weight: bold; 
+}
+.module-toggle-btn:hover {
+    transform: scale(1.05);
+}
+
+.admin-controls { 
+    background: #f9f9f9; 
+    padding: 15px; 
+    border: 1px solid #ccc; 
+    margin-bottom: 20px; 
+    border-radius: 4px;
+}
+.admin-controls h3 { margin-top: 0; color: #333; }
+
+.file-input-wrapper {
+    margin: 15px 0;
+}
+.file-input-wrapper input[type="file"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.error-message {
+    color: #c62828;
+    font-size: 14px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+    }
+    .dashboard input {
+        width: 100%;
+    }
+    .tabs {
+        flex-direction: column;
+    }
+    .tab {
+        width: 100%;
+        border-bottom: 1px solid #ccc;
+    }
+}
 </style>
 </head>
 <body>
@@ -168,7 +262,7 @@ tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
     <div id="adminLoginForm" class="hidden" style="margin-top:20px;">
         <input type="password" id="adminPassword" placeholder="Enter admin password">
         <button class="btn-admin" onclick="loginAsAdmin()">Login</button>
-        <div id="loginError" class="hidden" style="color:red; margin-top:5px;">Incorrect password</div>
+        <div id="loginError" class="error-message hidden">Incorrect password</div>
     </div>
 </div>
 
@@ -185,7 +279,7 @@ tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
     <div class="dashboard">
         <div>
             <label>Customer Name</label>
-            <input id="customerName" value="Internal Customer"/>
+            <input id="customerName" value="Global Enterprises"/>
         </div>
         <div>
             <label>Modules Selected</label>
@@ -194,6 +288,14 @@ tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
         <div>
             <label>Products Selected</label>
             <input id="productCount" readonly/>
+        </div>
+        <div>
+            <label>Total Features</label>
+            <input id="featureCount" readonly/>
+        </div>
+        <div>
+            <label>Total Personalizations</label>
+            <input id="persCount" readonly/>
         </div>
     </div>
 
@@ -206,14 +308,15 @@ tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
     <div id="estimation" class="tab-content">
         <div id="formContainer"></div>
         <div style="text-align:center; margin:20px 0;">
-            <button class="btn-download" onclick="downloadEstimation()">Download Excel Report</button>
-            <button class="btn-download" onclick="downloadJSON()">Download JSON</button>
+            <button class="btn-download" onclick="downloadEstimation()">📥 Download Excel Report</button>
+            <button class="btn-download" onclick="downloadJSON()">💾 Download JSON Config</button>
         </div>
     </div>
 
     <div id="admin" class="tab-content">
         <div class="admin-controls">
-            <h3>Configuration</h3>
+            <h3>Configuration Management</h3>
+            <p>Upload or download JSON configuration to save/restore estimation settings.</p>
             <div class="file-input-wrapper">
                 <input type="file" id="jsonFile" accept=".json">
                 <button class="btn-download" onclick="uploadJSON()" style="background:#333; margin-left:10px;">Upload JSON</button>
@@ -224,59 +327,75 @@ tr.grand-total { background: #9cc2e5; font-weight: bold; font-size: 15px; }
 </div>
 
 <script>
-// --- Configuration & Data ---
+// ============================================
+// CONFIGURATION & DATA
+// ============================================
 const ADMIN_PASSWORD = "admin";
 let currentUser = null;
 let personalizationCounts = {};
 let selectedModules = new Set();
 
-// SPECIFIC DATA FROM USER INPUT (Turn 1)
+// Product weights for complexity-based estimation
+const PRODUCT_WEIGHTS = {
+    "SCM Common Components": 0.5,
+    "Inventory Management": 1.2,
+    "Maintenance": 1.2,
+    "Manufacturing": 1.5,
+    "Order Management": 1.0,
+    "Collaboration Messaging Framework": 1.0,
+    "Procurement": 1.0,
+    "Product Hub": 1.0,
+    "Purchasing": 1.0,
+    "Quality Management": 1.1,
+    "Self Service Procurement & RSSP": 1.0,
+    "Supply Chain Collaboration": 1.0,
+    "Supply Chain Orchestration": 1.1,
+    "Supply Chain Planning": 1.2
+};
+
+// Pre-loaded data from user input (Turn 1)
 const PRODUCTS = [
-  { name: "Procurement", weight: 1.0 },
-  { name: "Order Management", weight: 1.0 }
+    { name: "Procurement", weight: 1.0 },
+    { name: "Order Management", weight: 1.0 }
 ];
 
 const MODULES = [
-  { name: "Purchasing", count: 30, product: "Procurement" },
-  { name: "Procurement Contracts", count: 3, product: "Procurement" },
-  { name: "Self Service Procurement", count: 0, product: "Procurement" },
-  { name: "Sourcing", count: 0, product: "Procurement" },
-  { name: "Order Management", count: 15, product: "Order Management" },
-  { name: "Pricing", count: 4, product: "Order Management" }
+    { name: "Purchasing", count: 30, product: "Procurement" },
+    { name: "Procurement Contracts", count: 3, product: "Procurement" },
+    { name: "Self Service Procurement", count: 0, product: "Procurement" },
+    { name: "Sourcing", count: 0, product: "Procurement" },
+    { name: "Order Management", count: 15, product: "Order Management" },
+    { name: "Pricing", count: 4, product: "Order Management" }
 ];
 
-// Pre-calculated Personalizations (Turn 1 Input)
+// Pre-calculated Personalizations (from Turn 1 input)
 const INPUT_PERSONALIZATIONS = {
-  "Procurement": { "Purchasing": 20, "Procurement Contracts": 0, "Self Service Procurement": 0, "Sourcing": 0 },
-  "Order Management": { "Order Management": 22, "Pricing": 0 }
+    "Procurement": { "Purchasing": 20, "Procurement Contracts": 0, "Self Service Procurement": 0, "Sourcing": 0 },
+    "Order Management": { "Order Management": 22, "Pricing": 0 }
 };
 
-// Default Tasks (Service Kick-off = 0 Effort as per Turn 1)
+// Default Overview Tasks (Service Kick-off = 0 as per Turn 1)
 const DEFAULT_OVERVIEW = [
-  { name:"Service Kick-off", detail:"Validate Pre-Adoption File", nonProd:0, prod:0, qty:1 },
-  { name:"Service Kick-off", detail:"Impact Assessment", nonProd:0, prod:0, qty:1 },
-  { name:"Discussion", detail:"Redwood Roadmap & Workplan", nonProd:8, prod:0, qty:1 },
-  { name:"Documentation", detail:"CWBs and Adoption Document", nonProd:16, prod:0, qty:1 },
-  { name:"Demo / Review", detail:"Walk Through of Features", nonProd:8, prod:0, qty:1 }
+    { name:"Service Kick-off", detail:"Validate Pre-Adoption File and Helper Tool Output", nonProd:0, prod:0, qty:1 },
+    { name:"Service Kick-off", detail:"Impact Assessment for Redwood and Personalization", nonProd:0, prod:0, qty:1 }
 ];
 
+// Default Hypercare Tasks
 const DEFAULT_HYPERCARE = [
-  { name:"Production Migration", detail:"Per personalization time / Env", nonProd:0, prod:0.5, qty:0 },
-  { name:"Issue Resolution", detail:"Hypercare Support", nonProd:0, prod:4, qty:0 }
+    { name:"Production Migration", detail:"Per personalization time / Env", nonProd:0, prod:0.5, qty:0 },
+    { name:"Issue Resolution", detail:"Hypercare Support (3 weeks)", nonProd:0, prod:4, qty:0 }
 ];
 
+// Main Configuration Object
 let CONFIG = {
     overview: JSON.parse(JSON.stringify(DEFAULT_OVERVIEW)),
     products: {},
     hypercare: JSON.parse(JSON.stringify(DEFAULT_HYPERCARE))
 };
 
-// --- Initialization ---
-window.onload = function() {
-    // Ensure DOM is ready before binding
-    console.log("App Loaded");
-};
-
+// ============================================
+// INITIALIZATION FUNCTIONS
+// ============================================
 function showAdminLogin() {
     document.getElementById('adminLoginForm').classList.remove('hidden');
 }
@@ -304,10 +423,10 @@ function logout() {
     document.getElementById('appScreen').classList.add('hidden');
     document.getElementById('adminPassword').value = '';
     document.getElementById('adminLoginForm').classList.add('hidden');
+    document.getElementById('loginError').classList.add('hidden');
 }
 
 function initializeApp() {
-    // Fix: Ensure elements exist before manipulating classes
     const loginScreen = document.getElementById('loginScreen');
     const appScreen = document.getElementById('appScreen');
     
@@ -322,7 +441,7 @@ function initializeApp() {
         renderTabs(['selector', 'estimation']);
     }
 
-    // Pre-select modules based on input data (Turn 1)
+    // Pre-select modules based on input data
     MODULES.forEach(m => {
         if(m.count > 0) {
             selectedModules.add(m.name);
@@ -340,10 +459,17 @@ function initializeApp() {
     activateTab('estimation');
 }
 
+// ============================================
+// TAB & RENDERING FUNCTIONS
+// ============================================
 function renderTabs(tabs) {
     const container = document.getElementById('tabsContainer');
     container.innerHTML = '';
-    const tabLabels = { selector: '1. Module Selection', estimation: '2. Estimation Report', admin: '3. Admin' };
+    const tabLabels = { 
+        selector: '1. Module Selection', 
+        estimation: '2. Estimation Report', 
+        admin: '3. Admin Configuration' 
+    };
     tabs.forEach(tabId => {
         const tab = document.createElement('div');
         tab.className = 'tab';
@@ -354,20 +480,23 @@ function renderTabs(tabs) {
 }
 
 function activateTab(id){
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     const tabs = Array.from(document.querySelectorAll('.tab'));
-    const idx = tabs.findIndex(t => t.textContent.includes(id === 'selector' ? 'Module' : id === 'estimation' ? 'Estimation' : 'Admin'));
+    const idx = tabs.findIndex(t => t.textContent.includes(
+        id === 'selector' ? 'Module' : id === 'estimation' ? 'Estimation' : 'Admin'
+    ));
     if(idx >= 0) tabs[idx].classList.add('active');
     document.getElementById(id).classList.add('active');
     if (id === 'admin' && currentUser === 'admin') renderAdmin();
 }
 
-function renderSection(parent, title, tasks, editable){
+function renderSection(parent, title, tasks, editable, isProduct = false){
     if(tasks.length === 0) return;
+    
     const sec = document.createElement("div");
     sec.className = "section";
-    const headerClass = title.includes("Product") ? "product-header" : "section-header";
+    const headerClass = isProduct ? "product-header" : "section-header";
     sec.innerHTML = `<div class="${headerClass}">${title}</div>`;
     
     let rows = "";
@@ -399,7 +528,7 @@ function renderSection(parent, title, tasks, editable){
     </tr>`;
     
     sec.innerHTML += `<table>
-        <thead><tr><th>Task</th><th>Details</th><th>Non-Prod</th><th>Prod</th><th>Qty</th><th>Total Hrs</th><th>CSU</th></tr></thead>
+        <thead><tr><th>Activity</th><th>Detailed Activity</th><th>Non Prod</th><th>Prod</th><th>Qty</th><th>Total</th><th>CSUs</th></tr></thead>
         <tbody>${rows}</tbody>
     </table>`;
     parent.appendChild(sec);
@@ -418,10 +547,12 @@ function renderSelector(){
         const safeId = product.name.replace(/\s+/g, '_');
         
         productDiv.innerHTML = `
-            <div class="product-header">${product.name}</div>
-            <div style="padding:10px; background:#f9f9f9;">
-                <label>Personalizations: 
-                    <input type="number" min="0" value="${personalizationCounts[product.name]}" style="width:80px;" onchange="updatePersonalization('${product.name}', this.value)">
+            <div class="product-header">${product.name} (Weight: ${product.weight})</div>
+            <div style="padding:10px; background:#f9f9f9; border-bottom:1px solid #ddd;">
+                <label style="font-weight:bold;">Personalizations: 
+                    <input type="number" min="0" value="${personalizationCounts[product.name]}" 
+                           style="width:80px; margin-left:8px;" 
+                           onchange="updatePersonalization('${product.name}', this.value)">
                 </label>
             </div>
             <table>
@@ -435,17 +566,23 @@ function renderSelector(){
             const isSelected = selectedModules.has(mod.name);
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td style="text-align:left;">${mod.name}</td>
+                <td style="text-align:left; padding:8px;">${mod.name}</td>
                 <td>${mod.count}</td>
-                <td><button class="module-toggle-btn ${isSelected?'selected':'unselected'}" onclick="toggleModule('${mod.name.replace(/'/g,"\\'")}')">${isSelected ? 'Yes' : 'No'}</button></td>`;
+                <td><button class="module-toggle-btn ${isSelected?'selected':'unselected'}" 
+                            onclick="toggleModule('${mod.name.replace(/'/g,"\\'")}')">
+                        ${isSelected ? '✓ Yes' : '✗ No'}
+                    </button></td>`;
             tbody.appendChild(row);
         });
     });
 }
 
 function toggleModule(moduleName) {
-    if (selectedModules.has(moduleName)) selectedModules.delete(moduleName);
-    else selectedModules.add(moduleName);
+    if (selectedModules.has(moduleName)) {
+        selectedModules.delete(moduleName);
+    } else {
+        selectedModules.add(moduleName);
+    }
     renderSelector();
     rebuildProductConfig();
     renderEstimation();
@@ -459,17 +596,32 @@ function updatePersonalization(productName, value) {
 
 function updateSummary() {
     document.getElementById('moduleCount').value = selectedModules.size;
+    
     const selectedProducts = new Set();
+    let totalFeatures = 0;
+    let totalPers = 0;
+    
     selectedModules.forEach(name => {
         const mod = MODULES.find(m => m.name === name);
-        if (mod) selectedProducts.add(mod.product);
+        if (mod) {
+            selectedProducts.add(mod.product);
+            totalFeatures += mod.count;
+        }
     });
+    
+    selectedProducts.forEach(p => {
+        totalPers += personalizationCounts[p] || 0;
+    });
+    
     document.getElementById('productCount').value = selectedProducts.size;
+    document.getElementById('featureCount').value = totalFeatures;
+    document.getElementById('persCount').value = totalPers;
 }
 
 function rebuildProductConfig(){
     CONFIG.products = {};
     const selectedProducts = new Set();
+    
     selectedModules.forEach(name => {
         const mod = MODULES.find(m => m.name === name);
         if (mod) selectedProducts.add(mod.product);
@@ -478,24 +630,64 @@ function rebuildProductConfig(){
     selectedProducts.forEach(productName => {
         const product = PRODUCTS.find(p => p.name === productName);
         let featureCount = 0;
+        
         MODULES.filter(m => m.product === productName).forEach(m => {
             if (selectedModules.has(m.name)) featureCount += m.count;
         });
+        
         const persCount = personalizationCounts[productName] || 0;
+        const weight = product ? product.weight : 1.0;
         
         CONFIG.products[productName] = [
-            { name: "Features Enablement", detail: "Setup, Profile option, Opt-in", nonProd: 0.1, prod: 0.1, qty: featureCount },
-            { name: "Verification (Config)", detail: "Verify feature enablement", nonProd: 0.1, prod: 0.1, qty: featureCount },
-            { name: "Verification (UI)", detail: "UI Verification", nonProd: 8 * product.weight, prod: 8 * product.weight, qty: 1 },
-            { name: "Unit Testing", detail: "Standard Process Testing", nonProd: 24 * product.weight, prod: 0, qty: 1 },
-            { name: "Classic vs Redwood Comparison", detail: "Column by Column comparison", nonProd: 16 * product.weight, prod: 0, qty: 1 },
-            { name: "Personalization Enablement", detail: "Redo personalizations", nonProd: 2, prod: 1, qty: persCount },
-            { name: "Testing After Personalizations", detail: "Testing post-personalization", nonProd: 40, prod: 0, qty: persCount > 0 ? 1 : 0 }
+            { 
+                name: "Features Enablement", 
+                detail: "Enabling Feature by Feature by setup, Profile option, Opt-in Enablement", 
+                nonProd: 0.1, prod: 0.1, qty: featureCount 
+            },
+            { 
+                name: "Verification of Enabled Features at Config Level", 
+                detail: "Once All the features are enabled, verified all features enablement", 
+                nonProd: 0.1, prod: 0.1, qty: featureCount 
+            },
+            { 
+                name: "Verification of Enabled Features at UI", 
+                detail: `Verification of enabled functionality in Redwood UI (Product weight: ${weight}x)`, 
+                nonProd: 8 * weight, prod: 8 * weight, qty: 1 
+            },
+            { 
+                name: "Enablement of Personalization", 
+                detail: "Redo personalizations. With the shift to Redwood architecture, many existing personalizations from Classic will not automatically migrate", 
+                nonProd: 2, prod: 0, qty: persCount 
+            },
+            { 
+                name: "Additional Personalization - Expected", 
+                detail: "Perform Additional personalization based on customer testing and inputs during testing", 
+                nonProd: 2, prod: 0, qty: persCount > 0 ? Math.max(1, Math.floor(persCount * 0.1)) : 0 
+            },
+            { 
+                name: "Unit Testing w/o Personalization", 
+                detail: "Testing of Standard Process by creating transaction", 
+                nonProd: 24 * weight, prod: 0, qty: 1 
+            },
+            { 
+                name: "Comparison between Classic vs Redwood", 
+                detail: "Column by Column comparison between Classic and Redwood to ensure everything is covered", 
+                nonProd: 16 * weight, prod: 0, qty: 1 
+            },
+            { 
+                name: "Testing After Personalizations", 
+                detail: "This can vary with number of Features and business process and Complexity", 
+                nonProd: 40, prod: 0, qty: persCount > 0 ? 1 : 0 
+            }
         ];
     });
     
+    // Calculate total personalizations for hypercare
     let totalPers = 0;
-    selectedProducts.forEach(p => { totalPers += personalizationCounts[p] || 0; });
+    selectedProducts.forEach(p => { 
+        totalPers += personalizationCounts[p] || 0; 
+    });
+    
     CONFIG.hypercare[0].qty = totalPers;
     CONFIG.hypercare[1].qty = Math.max(3, Math.ceil(totalPers * 0.2));
 }
@@ -503,50 +695,80 @@ function rebuildProductConfig(){
 function renderEstimation(){
     const c = document.getElementById("formContainer");
     c.innerHTML = "";
-    renderSection(c, "Overview", CONFIG.overview, false);
+    
+    // Overview Section
+    renderSection(c, "Service Kick-off", CONFIG.overview, false);
+    
+    // Product Sections
     Object.keys(CONFIG.products).forEach(productName => {
-        renderSection(c, `Product: ${productName}`, CONFIG.products[productName], false);
+        renderSection(c, `Product: ${productName}`, CONFIG.products[productName], false, true);
     });
-    renderSection(c, "UAT, Migration, Hypercare", CONFIG.hypercare, false);
+    
+    // Hypercare Section
+    renderSection(c, "Migration & Hypercare", CONFIG.hypercare, false);
+    
+    // Grand Total
     renderGrandTotal(c);
 }
 
 function renderAdmin(){
     const c = document.getElementById("adminContainer");
     c.innerHTML = "";
-    renderSection(c, "Overview", CONFIG.overview, true);
+    
+    renderSection(c, "Service Kick-off", CONFIG.overview, true);
+    
     Object.keys(CONFIG.products).forEach(productName => {
-        renderSection(c, `Product: ${productName}`, CONFIG.products[productName], true);
+        renderSection(c, `Product: ${productName}`, CONFIG.products[productName], true, true);
     });
-    renderSection(c, "UAT, Migration, Hypercare", CONFIG.hypercare, true);
+    
+    renderSection(c, "Migration & Hypercare", CONFIG.hypercare, true);
     renderGrandTotal(c);
 }
 
 function renderGrandTotal(parent) {
     let grandTotal = 0;
     let grandCSU = 0;
-    CONFIG.overview.forEach(t => { const total = (t.nonProd + t.prod) * t.qty; grandTotal += total; grandCSU += total/2; });
-    Object.values(CONFIG.products).forEach(tasks => { tasks.forEach(t => { const total = (t.nonProd + t.prod) * t.qty; grandTotal += total; grandCSU += total/2; }); });
-    CONFIG.hypercare.forEach(t => { const total = (t.nonProd + t.prod) * t.qty; grandTotal += total; grandCSU += total/2; });
+    
+    CONFIG.overview.forEach(t => { 
+        const total = (t.nonProd + t.prod) * t.qty; 
+        grandTotal += total; 
+        grandCSU += total/2; 
+    });
+    
+    Object.values(CONFIG.products).forEach(tasks => { 
+        tasks.forEach(t => { 
+            const total = (t.nonProd + t.prod) * t.qty; 
+            grandTotal += total; 
+            grandCSU += total/2; 
+        }); 
+    });
+    
+    CONFIG.hypercare.forEach(t => { 
+        const total = (t.nonProd + t.prod) * t.qty; 
+        grandTotal += total; 
+        grandCSU += total/2; 
+    });
     
     const sec = document.createElement("div");
     sec.className = "section";
     sec.style.marginTop = "30px";
     sec.innerHTML = `
-        <div class="section-header" style="background:#333; font-size:18px;">📊 GRAND TOTAL</div>
+        <div class="section-header" style="background:#595959; font-size:18px;">📊 GRAND TOTAL</div>
         <table>
             <thead>
                 <tr style="background:#f4f4f4;">
-                    <th colspan="5" style="text-align:right;">TOTAL ESTIMATION</th>
-                    <th style="font-size:16px;">${grandTotal.toFixed(1)} Hours</th>
-                    <th style="font-size:16px;">${grandCSU.toFixed(1)} CSU</th>
+                    <th colspan="5" style="text-align:right; font-size:16px;">TOTAL ESTIMATION</th>
+                    <th style="font-size:16px; background:#c6e0b4;">${grandTotal.toFixed(1)} Hours</th>
+                    <th style="font-size:16px; background:#c6e0b4;">${grandCSU.toFixed(1)} CSU</th>
                 </tr>
             </thead>
         </table>`;
     parent.appendChild(sec);
 }
 
-// Event Delegation for Inputs
+// ============================================
+// EVENT HANDLING
+// ============================================
 document.addEventListener('input', function(e) {
     if (e.target.classList.contains('editable-field')) {
         const sectionKey = e.target.getAttribute('data-section');
@@ -558,77 +780,74 @@ document.addEventListener('input', function(e) {
 });
 
 function updateTask(sectionKey, idx, field, value){
-    if(sectionKey === "Overview" && CONFIG.overview[idx]) CONFIG.overview[idx][field] = value;
-    else if(sectionKey.includes("Hypercare") && CONFIG.hypercare[idx]) CONFIG.hypercare[idx][field] = value;
+    if(sectionKey === "Service_Kick_off" && CONFIG.overview[idx]) {
+        CONFIG.overview[idx][field] = value;
+    }
+    else if(sectionKey.includes("Migration") && CONFIG.hypercare[idx]) {
+        CONFIG.hypercare[idx][field] = value;
+    }
     else if(sectionKey.includes("Product")) {
         let productName = sectionKey.replace(/^Product_+/, "").replace(/_/g, " ");
         let matchingProduct = Object.keys(CONFIG.products).find(p => p === productName);
-        if (!matchingProduct) matchingProduct = Object.keys(CONFIG.products).find(p => p.replace(/[^a-zA-Z0-9]/g,'').toLowerCase() === productName.replace(/[^a-zA-Z0-9]/g,'').toLowerCase());
-        if(matchingProduct && CONFIG.products[matchingProduct][idx]) CONFIG.products[matchingProduct][idx][field] = value;
+        if (!matchingProduct) {
+            matchingProduct = Object.keys(CONFIG.products).find(p => 
+                p.replace(/[^a-zA-Z0-9]/g,'').toLowerCase() === productName.replace(/[^a-zA-Z0-9]/g,'').toLowerCase()
+            );
+        }
+        if(matchingProduct && CONFIG.products[matchingProduct][idx]) {
+            CONFIG.products[matchingProduct][idx][field] = value;
+        }
     }
     renderEstimation();
     if(currentUser === 'admin') renderAdmin();
 }
 
+// ============================================
+// EXCEL EXPORT WITH STYLING (Python-like)
+// ============================================
 function downloadEstimation(){
     const customerName = document.getElementById('customerName').value || 'Customer';
     const wb = XLSX.utils.book_new();
-    const ws_data = [];
     
-    // Header
-    ws_data.push(['Redwood Adoption Estimator']);
-    ws_data.push(['Customer:', customerName]);
-    ws_data.push(['Date:', new Date().toLocaleDateString()]);
-    ws_data.push([]);
-    ws_data.push(['Section', 'Task', 'Details', 'Non-Prod', 'Prod', 'Qty', 'Total Man Hours', 'CSU']);
+    // ========================================
+    // SUMMARY SHEET
+    // ========================================
+    const summaryData = [];
+    let row = 1;
     
-    // Overview
-    let sectionTotal = 0, sectionCSU = 0;
-    CONFIG.overview.forEach(t => {
-        const tot = (t.nonProd + t.prod) * t.qty;
-        const csu = tot / 2;
-        sectionTotal += tot; sectionCSU += csu;
-        ws_data.push(['Overview', t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
-    });
-    ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
-    ws_data.push([]);
+    // Title
+    summaryData.push([{v:"REDWOOD ADOPTION ESTIMATOR - SUMMARY", s:{font:{bold:true, sz:16}, alignment:{horizontal:"center"}}}]);
+    row += 2;
     
-    // Products
-    let grandTotal = sectionTotal, grandCSU = sectionCSU;
-    Object.entries(CONFIG.products).forEach(([prodName, tasks]) => {
-        sectionTotal = 0; sectionCSU = 0;
-        tasks.forEach(t => {
-            const tot = (t.nonProd + t.prod) * t.qty;
-            const csu = tot / 2;
-            sectionTotal += tot; sectionCSU += csu;
-            ws_data.push([`Product: ${prodName}`, t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
-        });
-        ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
-        ws_data.push([]);
-        grandTotal += sectionTotal; grandCSU += sectionCSU;
-    });
+    // Customer Info
+    summaryData.push([{v:"Customer Name:"}, {v:customerName, s:{font:{bold:true, color:{rgb:"0000FF"}}}}]);
+    row += 1;
+    summaryData.push([{v:"Date:"}, {v:new Date().toLocaleDateString()}]);
+    row += 2;
     
-    // Hypercare
-    sectionTotal = 0; sectionCSU = 0;
-    CONFIG.hypercare.forEach(t => {
-        const tot = (t.nonProd + t.prod) * t.qty;
-        const csu = tot / 2;
-        sectionTotal += tot; sectionCSU += csu;
-        ws_data.push(['UAT, Migration, Hypercare', t.name, t.detail, t.nonProd, t.prod, t.qty, tot, csu]);
-    });
-    ws_data.push(['', '', '', '', '', 'Section Total:', sectionTotal, sectionCSU]);
-    ws_data.push([]);
-    grandTotal += sectionTotal; grandCSU += sectionCSU;
+    // Headers
+    const summaryHeaders = ["Product", "Module", "Features", "Personalizations", "Complexity", "CSU Features", "Actual CSU"];
+    const headerRow = summaryHeaders.map(h => ({
+        v: h,
+        s: {
+            font: {bold:true, color:{rgb:"FFFFFF"}, sz:11},
+            fill: {fgColor:{rgb:"9BC2E6"}},
+            alignment: {horizontal:"center", vertical:"center"},
+            border: {
+                top:{style:"thin", color:{rgb:"BDBDBD"}},
+                bottom:{style:"thin", color:{rgb:"BDBDBD"}},
+                left:{style:"thin", color:{rgb:"BDBDBD"}},
+                right:{style:"thin", color:{rgb:"BDBDBD"}}
+            }
+        }
+    }));
+    summaryData.push(headerRow);
+    row += 1;
     
-    ws_data.push(['', '', '', '', '', 'GRAND TOTAL:', grandTotal, grandCSU]);
-    ws_data.push([]);
-    
-    // SUMMARY TABLE (Turn 2 Requirement)
-    ws_data.push(['SUMMARY']);
-    ws_data.push(['Product', 'Module', 'Features', 'Personalization', 'Complexity', 'CSU Features', 'Actual CSU']);
-    
-    let summaryTotalFeatures = 0, summaryTotalPers = 0, summaryTotalCSU = 0;
-    const productTotals = {};
+    // Module Data
+    let grandTotalFeatures = 0;
+    let grandTotalPers = 0;
+    let productCSUTotals = {};
     
     MODULES.forEach(mod => {
         if(selectedModules.has(mod.name)) {
@@ -636,95 +855,250 @@ function downloadEstimation(){
             const featCount = mod.count;
             const persCount = personalizationCounts[prodName] || 0;
             
+            // Calculate product CSU
             let prodTotalHours = 0;
             if(CONFIG.products[prodName]) {
-                CONFIG.products[prodName].forEach(t => { prodTotalHours += (t.nonProd + t.prod) * t.qty; });
+                CONFIG.products[prodName].forEach(t => {
+                    prodTotalHours += (t.nonProd + t.prod) * t.qty;
+                });
             }
             const prodCSU = prodTotalHours / 2;
             
-            ws_data.push([prodName, mod.name, featCount, persCount, 1, prodCSU.toFixed(1), prodCSU.toFixed(1)]);
+            if(!productCSUTotals[prodName]) productCSUTotals[prodName] = 0;
+            productCSUTotals[prodName] = prodCSU;
             
-            summaryTotalFeatures += featCount;
-            summaryTotalPers += persCount;
+            summaryData.push([
+                {v: prodName, s:{alignment:{horizontal:"left"}}},
+                {v: mod.name, s:{alignment:{horizontal:"left"}}},
+                {v: featCount, s:{alignment:{horizontal:"center"}}},
+                {v: persCount, s:{alignment:{horizontal:"center"}}},
+                {v: "", s:{alignment:{horizontal:"center"}}},
+                {v: "", s:{alignment:{horizontal:"center"}}},
+                {v: "", s:{alignment:{horizontal:"center"}}}
+            ]);
             
-            if(!productTotals[prodName]) productTotals[prodName] = { feat:0, pers:0, csu:0 };
-            productTotals[prodName].feat += featCount;
-            productTotals[prodName].pers += persCount;
-            productTotals[prodName].csu += prodCSU;
+            grandTotalFeatures += featCount;
+            grandTotalPers += persCount;
         }
     });
     
-    Object.entries(productTotals).forEach(([pname, data]) => {
-        ws_data.push(['Total', pname, data.feat, data.pers, 1, data.csu.toFixed(1), data.csu.toFixed(1)]);
-        summaryTotalCSU += data.csu;
+    // Product Totals
+    Object.keys(productCSUTotals).forEach(prodName => {
+        let prodFeat = 0;
+        let prodPers = personalizationCounts[prodName] || 0;
+        
+        MODULES.filter(m => m.product === prodName && selectedModules.has(m.name))
+               .forEach(m => prodFeat += m.count);
+        
+        summaryData.push([
+            {v: "Total", s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"left"}}},
+            {v: "", s:{fill:{fgColor:{rgb:"C6E0B4"}}}},
+            {v: prodFeat, s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}},
+            {v: prodPers, s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}},
+            {v: PRODUCT_WEIGHTS[prodName] || 1.0, s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}},
+            {v: productCSUTotals[prodName].toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}},
+            {v: productCSUTotals[prodName].toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}}
+        ]);
     });
     
-    ws_data.push(['Grand Total', '', summaryTotalFeatures, summaryTotalPers, 1, summaryTotalCSU.toFixed(1), summaryTotalCSU.toFixed(1)]);
+    // Grand Total
+    let grandTotalCSU = Object.values(productCSUTotals).reduce((a,b) => a+b, 0);
+    summaryData.push([
+        {v: "Grand Total", s:{font:{bold:true, sz:12}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"left"}}},
+        {v: "", s:{fill:{fgColor:{rgb:"C6E0B4"}}}},
+        {v: grandTotalFeatures, s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}},
+        {v: grandTotalPers, s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}},
+        {v: Object.keys(productCSUTotals).length, s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}},
+        {v: grandTotalCSU.toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}},
+        {v: grandTotalCSU.toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"C6E0B4"}}, alignment:{horizontal:"center"}}}
+    ]);
     
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-    ws['!cols'] = [{ wch: 30 }, { wch: 45 }, { wch: 60 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 18 }, { wch: 12 }];
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+    wsSummary['!cols'] = [
+        {wch:30}, {wch:35}, {wch:12}, {wch:18}, {wch:12}, {wch:15}, {wch:15}
+    ];
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
     
-    // Apply Excel Colors (Turn 2 Requirement)
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    for (let R = range.s.r; R <= range.e.r; ++R) {
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-            const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
-            if (!ws[cell_address]) continue;
-            if (!ws[cell_address].s) ws[cell_address].s = {};
-            
-            // Header Row (Blue)
-            if (R === 4) {
-                ws[cell_address].s = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "5B9BD5" } }, alignment: { horizontal: "center" }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
+    // ========================================
+    // ESTIMATION SHEET
+    // ========================================
+    const estData = [];
+    row = 1;
+    
+    // Title
+    estData.push([{v:"REDWOOD ADOPTION ESTIMATION", s:{font:{bold:true, sz:16}, alignment:{horizontal:"center"}}}]);
+    row += 2;
+    
+    // Customer Info
+    estData.push([{v:"Customer:"}, {v:customerName, s:{font:{bold:true, color:{rgb:"0000FF"}}}}]);
+    row += 1;
+    estData.push([{v:"Date:"}, {v:new Date().toLocaleDateString()}]);
+    row += 2;
+    
+    // Headers
+    const estHeaders = ["Activity", "Detailed Activity", "Non Prod", "Prod", "Qty", "Total", "CSUs"];
+    const estHeaderRow = estHeaders.map(h => ({
+        v: h,
+        s: {
+            font: {bold:true, color:{rgb:"FFFFFF"}, sz:11},
+            fill: {fgColor:{rgb:"9BC2E6"}},
+            alignment: {horizontal:"center", vertical:"center"},
+            border: {
+                top:{style:"thin", color:{rgb:"BDBDBD"}},
+                bottom:{style:"thin", color:{rgb:"BDBDBD"}},
+                left:{style:"thin", color:{rgb:"BDBDBD"}},
+                right:{style:"thin", color:{rgb:"BDBDBD"}}
             }
-            // Section Totals (Green)
-            if (ws[cell_address].v === 'Section Total:') {
-                for (let colC = 0; colC <= 7; colC++) {
-                    const totalCell = XLSX.utils.encode_cell({ r: R, c: colC });
-                    if (ws[totalCell]) ws[totalCell].s = { font: { bold: true }, fill: { fgColor: { rgb: "C6EFCE" } }, alignment: { horizontal: colC >= 5 ? "center" : "right" }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
-                }
-            }
-            // Grand Total (Blue/Green)
-            if (ws[cell_address].v === 'GRAND TOTAL:') {
-                for (let colC = 0; colC <= 7; colC++) {
-                    const grandCell = XLSX.utils.encode_cell({ r: R, c: colC });
-                    if (ws[grandCell]) ws[grandCell].s = { font: { bold: true, sz: 14 }, fill: { fgColor: { rgb: "9CC2E5" } }, alignment: { horizontal: colC >= 5 ? "center" : "right" }, border: { top: { style: "medium" }, bottom: { style: "medium" }, left: { style: "thin" }, right: { style: "thin" } } };
-                }
-            }
-            // Summary Header
-            if (ws[cell_address].v === 'SUMMARY') {
-                ws[cell_address].s = { font: { bold: true, sz: 14 }, fill: { fgColor: { rgb: "DDEBF7" } } };
-            }
-            // Summary Table Header
-            if (ws[cell_address].v === 'Product' && C === 0 && R > 10) {
-                for (let colC = 0; colC <= 6; colC++) {
-                    const sumHead = XLSX.utils.encode_cell({ r: R, c: colC });
-                    if (ws[sumHead]) ws[sumHead].s = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "5B9BD5" } }, alignment: { horizontal: "center" }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
-                }
-            }
-            // Summary Totals
-            if (ws[cell_address].v === 'Total' || ws[cell_address].v === 'Grand Total') {
-                for (let colC = 0; colC <= 6; colC++) {
-                    const sumTot = XLSX.utils.encode_cell({ r: R, c: colC });
-                    if (ws[sumTot]) ws[sumTot].s = { font: { bold: true }, fill: { fgColor: { rgb: "C6EFCE" } }, alignment: { horizontal: "center" }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
-                }
-            }
-            // Alternating Rows
-            if (R > 4 && ws[cell_address].v !== 'Section Total:' && ws[cell_address].v !== 'GRAND TOTAL:' && ws[cell_address].v !== '' && ws[cell_address].v !== 'SUMMARY' && ws[cell_address].v !== 'Product' && ws[cell_address].v !== 'Total' && ws[cell_address].v !== 'Grand Total') {
-                ws[cell_address].s = { alignment: { horizontal: C <= 2 ? "left" : "center", vertical: "center", wrapText: C === 2 }, border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } } };
-                if (R % 2 === 0) ws[cell_address].s.fill = { fgColor: { rgb: "DDEBF7" } };
-            }
-            // Number Format
-            if (C >= 3 && C <= 7 && R > 4 && typeof ws[cell_address].v === 'number') ws[cell_address].z = '0.0';
         }
-    }
+    }));
+    estData.push(estHeaderRow);
+    row += 1;
     
-    XLSX.utils.book_append_sheet(wb, ws, "Estimation");
+    // Overview Section
+    let sectionStart = estData.length;
+    estData.push([{v:"SERVICE KICK-OFF", s:{font:{bold:true, color:{rgb:"FFFFFF"}, sz:11}, fill:{fgColor:{rgb:"A5A5A5"}}, alignment:{horizontal:"center"}}}]);
+    CONFIG.overview.forEach(t => {
+        const total = (t.nonProd + t.prod) * t.qty;
+        const csu = total / 2;
+        estData.push([
+            {v: t.name, s:{alignment:{horizontal:"left"}}},
+            {v: t.detail, s:{alignment:{horizontal:"left", wrapText:true}}},
+            {v: t.nonProd, s:{alignment:{horizontal:"center"}}},
+            {v: t.prod, s:{alignment:{horizontal:"center"}}},
+            {v: t.qty, s:{alignment:{horizontal:"center"}}},
+            {v: total, s:{alignment:{horizontal:"center"}}},
+            {v: csu, s:{alignment:{horizontal:"center"}}}
+        ]);
+    });
+    // Section Total
+    let sectionTotal = CONFIG.overview.reduce((sum, t) => sum + (t.nonProd + t.prod) * t.qty, 0);
+    let sectionCSU = sectionTotal / 2;
+    estData.push([
+        {v:"Section Total", s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"right"}}, t:{t:1, r:5}},
+        {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+        {v:sectionTotal.toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"center"}}},
+        {v:sectionCSU.toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"center"}}}
+    ]);
+    estData.push([]); // Empty row
+    
+    // Product Sections
+    let grandTotalHours = sectionTotal;
+    let grandTotalCSUHours = sectionCSU;
+    
+    Object.entries(CONFIG.products).forEach(([prodName, tasks]) => {
+        sectionStart = estData.length;
+        estData.push([{v:`ADOPTION ACTIVITIES - ${prodName.toUpperCase()}`, s:{font:{bold:true, color:{rgb:"FFFFFF"}, sz:11}, fill:{fgColor:{rgb:"A5A5A5"}}, alignment:{horizontal:"center"}}}]);
+        
+        sectionTotal = 0;
+        sectionCSU = 0;
+        
+        tasks.forEach(t => {
+            const total = (t.nonProd + t.prod) * t.qty;
+            const csu = total / 2;
+            sectionTotal += total;
+            sectionCSU += csu;
+            estData.push([
+                {v: t.name, s:{alignment:{horizontal:"left"}}},
+                {v: t.detail, s:{alignment:{horizontal:"left", wrapText:true}}},
+                {v: t.nonProd, s:{alignment:{horizontal:"center"}}},
+                {v: t.prod, s:{alignment:{horizontal:"center"}}},
+                {v: t.qty, s:{alignment:{horizontal:"center"}}},
+                {v: total, s:{alignment:{horizontal:"center"}}},
+                {v: csu, s:{alignment:{horizontal:"center"}}}
+            ]);
+        });
+        
+        // Section Total
+        estData.push([
+            {v:"Section Total", s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"right"}}},
+            {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+            {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+            {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+            {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+            {v:sectionTotal.toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"center"}}},
+            {v:sectionCSU.toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"center"}}}
+        ]);
+        estData.push([]);
+        
+        grandTotalHours += sectionTotal;
+        grandTotalCSUHours += sectionCSU;
+    });
+    
+    // Hypercare Section
+    sectionStart = estData.length;
+    estData.push([{v:"MIGRATION & HYPERCARE", s:{font:{bold:true, color:{rgb:"FFFFFF"}, sz:11}, fill:{fgColor:{rgb:"A5A5A5"}}, alignment:{horizontal:"center"}}}]);
+    
+    sectionTotal = 0;
+    sectionCSU = 0;
+    
+    CONFIG.hypercare.forEach(t => {
+        const total = (t.nonProd + t.prod) * t.qty;
+        const csu = total / 2;
+        sectionTotal += total;
+        sectionCSU += csu;
+        estData.push([
+            {v: t.name, s:{alignment:{horizontal:"left"}}},
+            {v: t.detail, s:{alignment:{horizontal:"left", wrapText:true}}},
+            {v: t.nonProd, s:{alignment:{horizontal:"center"}}},
+            {v: t.prod, s:{alignment:{horizontal:"center"}}},
+            {v: t.qty, s:{alignment:{horizontal:"center"}}},
+            {v: total, s:{alignment:{horizontal:"center"}}},
+            {v: csu, s:{alignment:{horizontal:"center"}}}
+        ]);
+    });
+    
+    // Section Total
+    estData.push([
+        {v:"Section Total", s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"right"}}},
+        {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"E7E6E6"}}}},
+        {v:sectionTotal.toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"center"}}},
+        {v:sectionCSU.toFixed(1), s:{font:{bold:true}, fill:{fgColor:{rgb:"E7E6E6"}}, alignment:{horizontal:"center"}}}
+    ]);
+    estData.push([]);
+    
+    grandTotalHours += sectionTotal;
+    grandTotalCSUHours += sectionCSU;
+    
+    // Grand Total
+    estData.push([
+        {v:"GRAND TOTAL", s:{font:{bold:true, sz:12, color:{rgb:"FFFFFF"}}, fill:{fgColor:{rgb:"595959"}}, alignment:{horizontal:"right"}}},
+        {v:"", s:{fill:{fgColor:{rgb:"595959"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"595959"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"595959"}}}},
+        {v:"", s:{fill:{fgColor:{rgb:"595959"}}}},
+        {v:grandTotalHours.toFixed(1), s:{font:{bold:true, sz:12, color:{rgb:"FFFFFF"}}, fill:{fgColor:{rgb:"595959"}}, alignment:{horizontal:"center"}}},
+        {v:grandTotalCSUHours.toFixed(1), s:{font:{bold:true, sz:12, color:{rgb:"FFFFFF"}}, fill:{fgColor:{rgb:"595959"}}, alignment:{horizontal:"center"}}}
+    ]);
+    
+    const wsEst = XLSX.utils.aoa_to_sheet(estData);
+    wsEst['!cols'] = [
+        {wch:35}, {wch:60}, {wch:12}, {wch:12}, {wch:8}, {wch:15}, {wch:12}
+    ];
+    XLSX.utils.book_append_sheet(wb, wsEst, "Estimation");
+    
+    // Save workbook
     XLSX.writeFile(wb, `${customerName}_Redwood_Estimation.xlsx`);
 }
 
+// ============================================
+// JSON CONFIG EXPORT/IMPORT
+// ============================================
 function downloadJSON() {
     const customerName = document.getElementById('customerName').value || 'Customer';
-    const jsonData = { version: '1.0', exportDate: new Date().toISOString(), customerName: customerName, selectedModules: Array.from(selectedModules), personalizationCounts: personalizationCounts, config: CONFIG };
+    const jsonData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        customerName: customerName,
+        selectedModules: Array.from(selectedModules),
+        personalizationCounts: personalizationCounts,
+        config: CONFIG
+    };
     const jsonString = JSON.stringify(jsonData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -739,12 +1113,17 @@ function downloadJSON() {
 
 function uploadJSON() {
     const file = document.getElementById('jsonFile').files[0];
-    if (!file) { alert('Please select a JSON file first'); return; }
+    if (!file) { 
+        alert('Please select a JSON file first'); 
+        return; 
+    }
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
             const jsonData = JSON.parse(e.target.result);
-            if (!jsonData.config || !jsonData.selectedModules) throw new Error('Invalid JSON structure');
+            if (!jsonData.config || !jsonData.selectedModules) {
+                throw new Error('Invalid JSON structure');
+            }
             document.getElementById('customerName').value = jsonData.customerName || 'Customer';
             selectedModules.clear();
             jsonData.selectedModules.forEach(mod => selectedModules.add(mod));
@@ -755,7 +1134,7 @@ function uploadJSON() {
             renderSelector();
             renderEstimation();
             if(currentUser === 'admin') renderAdmin();
-            alert('JSON configuration imported successfully!');
+            alert('✓ JSON configuration imported successfully!');
             document.getElementById('jsonFile').value = '';
         } catch(err) {
             alert('Error reading JSON file: ' + err.message);
@@ -763,6 +1142,11 @@ function uploadJSON() {
     };
     reader.readAsText(file);
 }
+
+// Initialize on load
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('Redwood Estimator loaded');
+});
 </script>
 </body>
 </html>
